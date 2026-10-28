@@ -1,131 +1,1524 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Home · SysAdmin Docs</title>
-  <meta name="description" content="A demonstration documentation website for Professional Practices and Documentation: documentation standards, IT policies and compliance, and ethics in system administration.">
-  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="assets/css/style.css">
-  <script>try{var t=localStorage.getItem('docs-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Practice IT documentation: work through realistic system administration scenarios, record them properly, and check what you captured.">
+<!-- app:start -->
+<title>SysAdmin Documentation Lab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
+<style>
+/* Layout: an operations-console app bar over a two-pane workbench: the situation feed on the left, the record being written on the right. */
+:root {
+  --bg: #f1f4f2;
+  --surface: #ffffff;
+  --surface-2: #e8edea;
+  --ink: #14201b;
+  --muted: #55635c;
+  --line: #d2dad6;
+  --line-strong: #a9b7b0;
+  --accent: #0a6a54;
+  --accent-strong: #075040;
+  --accent-ink: #ffffff;
+  --accent-soft: #d7ede4;
+  --stamp: #8a5300;
+  --stamp-soft: #fbecd2;
+  --ok: #17763a;
+  --ok-soft: #ddf1e3;
+  --warn: #985800;
+  --warn-soft: #fcedd5;
+  --bad: #b0261d;
+  --bad-soft: #fbe6e4;
+  --shadow: 0 1px 2px rgb(16 28 23 / .06), 0 10px 28px rgb(16 28 23 / .08);
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "IBM Plex Sans Condensed", "IBM Plex Sans", "Arial Narrow", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --r: 8px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1412; --surface: #151d1a; --surface-2: #1c2622; --ink: #e3ebe7; --muted: #95a49c;
+    --line: #29352f; --line-strong: #3b4943; --accent: #5cc4a4; --accent-strong: #84d8bd; --accent-ink: #062219;
+    --accent-soft: #15372d; --stamp: #f0b45c; --stamp-soft: #382811; --ok: #66d18f; --ok-soft: #12301e;
+    --warn: #f0b04f; --warn-soft: #34260e; --bad: #ff8073; --bad-soft: #3a1714;
+    --shadow: 0 1px 2px rgb(0 0 0 / .4), 0 10px 28px rgb(0 0 0 / .35);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1412; --surface: #151d1a; --surface-2: #1c2622; --ink: #e3ebe7; --muted: #95a49c;
+  --line: #29352f; --line-strong: #3b4943; --accent: #5cc4a4; --accent-strong: #84d8bd; --accent-ink: #062219;
+  --accent-soft: #15372d; --stamp: #f0b45c; --stamp-soft: #382811; --ok: #66d18f; --ok-soft: #12301e;
+  --warn: #f0b04f; --warn-soft: #34260e; --bad: #ff8073; --bad-soft: #3a1714;
+  --shadow: 0 1px 2px rgb(0 0 0 / .4), 0 10px 28px rgb(0 0 0 / .35);
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scroll-padding-top: 84px; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.55 var(--font-body); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--surface); }
+[hidden] { display: none !important; }
+a { color: var(--accent-strong); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(1.7rem, 3.4vw, 2.2rem); font-weight: 700; letter-spacing: -.01em; }
+h2 { font-size: 1.3rem; font-weight: 700; }
+h3 { font-size: 1.05rem; font-weight: 600; }
+p { margin: 0; }
+.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+.eyebrow { font: 600 11.5px/1.4 var(--font-mono); letter-spacing: .09em; text-transform: uppercase; color: var(--accent-strong); }
+.lead { color: var(--muted); font-size: 1.05rem; max-width: 66ch; }
+.spacer { flex: 1; }
+.wrap { max-width: 1280px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+/* App bar */
+.appbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--surface); border-bottom: 1px solid var(--line); }
+.appbar-inner { display: flex; align-items: center; gap: 8px 22px; flex-wrap: wrap; min-height: 60px; padding-block: 8px; }
+.brand { display: flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none; font: 700 18px/1.1 var(--font-display); }
+.brand svg { width: 28px; height: 28px; color: var(--accent); flex: none; }
+.tabs { display: flex; gap: 2px; flex-wrap: wrap; }
+.tabs a { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 6px; color: var(--muted); text-decoration: none; font-weight: 500; font-size: 14.5px; }
+.tabs a:hover { color: var(--ink); background: var(--surface-2); }
+.tabs a[aria-current="page"] { color: var(--accent-strong); background: var(--accent-soft); font-weight: 600; }
+.count { font: 600 11.5px/1.5 var(--font-mono); padding: 0 6px; border-radius: 99px; background: var(--surface-2); color: var(--muted); }
+.tabs a[aria-current="page"] .count { background: var(--surface); }
+.clock { margin-left: auto; display: flex; gap: 8px; align-items: baseline; font: 500 13px/1.3 var(--font-mono); color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.clock strong { color: var(--ink); font-weight: 600; font-size: 14px; }
+@media (max-width: 820px) {
+  .appbar { position: static; }
+  html { scroll-padding-top: 16px; }
+  .clock { margin-left: 0; width: 100%; }
+}
+
+main.wrap { padding-block: 28px 72px; }
+
+/* Buttons and chips */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 38px; padding: 0 14px; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--surface); color: var(--ink); font: 600 14px/1.2 var(--font-body); cursor: pointer; text-decoration: none; white-space: nowrap; }
+.btn:hover { border-color: var(--accent); color: var(--accent-strong); }
+.btn:disabled { opacity: .55; cursor: default; }
+.btn svg { width: 16px; height: 16px; flex: none; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn-primary:hover { background: var(--accent-strong); border-color: var(--accent-strong); color: var(--accent-ink); }
+.btn-ghost { background: transparent; border-color: transparent; color: var(--muted); }
+.btn-ghost:hover { background: var(--surface-2); border-color: transparent; }
+.btn-danger { color: var(--bad); border-color: var(--bad); }
+.btn-danger:hover { background: var(--bad-soft); color: var(--bad); border-color: var(--bad); }
+.btn-sm { min-height: 30px; padding: 0 10px; font-size: 13px; }
+.chip { display: inline-flex; align-items: center; gap: 5px; padding: 1px 7px; border-radius: 4px; font: 600 11.5px/1.6 var(--font-mono); letter-spacing: .03em; background: var(--surface-2); color: var(--muted); white-space: nowrap; }
+.chip-code { background: var(--accent-soft); color: var(--accent-strong); }
+.sev-low { background: var(--surface-2); color: var(--muted); }
+.sev-medium { background: var(--warn-soft); color: var(--warn); }
+.sev-high { background: var(--bad-soft); color: var(--bad); }
+.sev-critical { background: var(--bad); color: var(--surface); }
+.st-open, .st-pending { background: var(--warn-soft); color: var(--warn); }
+.st-in-progress { background: var(--accent-soft); color: var(--accent-strong); }
+.st-resolved, .st-closed { background: var(--ok-soft); color: var(--ok); }
+.chip-example { background: var(--stamp-soft); color: var(--stamp); }
+
+.pane { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 18px; }
+.stack { display: flex; flex-direction: column; gap: 14px; }
+
+/* Scenarios view */
+.intro { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 28px; align-items: end; padding-bottom: 26px; border-bottom: 1px solid var(--line); }
+.intro .lead { margin-top: 10px; }
+.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; counter-reset: step; }
+.steps li { counter-increment: step; display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 10px; align-items: baseline; padding: 10px 12px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); }
+.steps li::before { content: counter(step); font: 600 13px var(--font-mono); color: var(--accent-strong); background: var(--accent-soft); border-radius: 4px; text-align: center; padding: 1px 0; }
+.steps b { font-weight: 600; }
+@media (max-width: 860px) { .intro { grid-template-columns: minmax(0, 1fr); } }
+
+.section-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin: 30px 0 14px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 14px; }
+.card { display: flex; flex-direction: column; gap: 10px; padding: 18px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); }
+.card:hover { border-color: var(--line-strong); }
+.card-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13px; }
+.card h3 { font-size: 1.15rem; }
+.card p { color: var(--muted); font-size: 14.5px; }
+.card-foot { display: flex; align-items: center; gap: 10px; margin-top: auto; padding-top: 6px; }
+.done { display: inline-flex; align-items: center; gap: 5px; font: 600 12px var(--font-mono); color: var(--ok); }
+.done svg { width: 14px; height: 14px; }
+
+.banner { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 22px; padding: 14px 16px; border: 1px solid var(--stamp); background: var(--stamp-soft); border-radius: var(--r); }
+.banner p { flex: 1 1 260px; }
+.blank { margin-top: 30px; padding: 20px; border: 1px dashed var(--line-strong); border-radius: var(--r); display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 14px 24px; align-items: center; }
+.blank p { color: var(--muted); margin-top: 4px; }
+.btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+@media (max-width: 760px) { .blank { grid-template-columns: minmax(0, 1fr); } }
+
+/* Practice view */
+.practice-head { display: flex; align-items: flex-end; gap: 12px 24px; flex-wrap: wrap; margin-bottom: 20px; }
+.practice-head h1 { margin-top: 4px; }
+.id-preview { font: 500 13px var(--font-mono); color: var(--muted); padding: 6px 10px; border: 1px dashed var(--line-strong); border-radius: 6px; }
+.id-preview b { color: var(--ink); }
+.workbench { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 22px; align-items: start; }
+.workbench.single { grid-template-columns: minmax(0, 860px); justify-content: center; }
+.feed-pane { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 76px); max-height: calc(100vh - 96px); overflow-y: auto; }
+@media (max-width: 980px) { .workbench { grid-template-columns: minmax(0, 1fr); } .feed-pane { position: static; max-height: none; } }
+.feed-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.sim-date { font: 500 12.5px var(--font-mono); color: var(--muted); }
+.role { margin-top: 10px; padding: 10px 12px; background: var(--surface-2); border-radius: 6px; font-size: 14px; }
+.feed { list-style: none; margin: 8px 0 0; padding: 0; }
+.event { display: grid; grid-template-columns: 58px minmax(0, 1fr); gap: 12px; padding: 14px 0; border-top: 1px dashed var(--line); }
+.event:first-child { border-top: 0; }
+.event-time { font: 600 15px/1.4 var(--font-mono); color: var(--stamp); font-variant-numeric: tabular-nums; }
+.event-ch { font: 600 10.5px/1.4 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.event-from { font-weight: 600; margin-top: 1px; }
+.event-body { margin-top: 4px; white-space: pre-line; overflow-wrap: anywhere; }
+.event.fresh { animation: fresh 1.6s ease-out; }
+@keyframes fresh { from { background: var(--stamp-soft); } to { background: transparent; } }
+.feed-more { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding-top: 14px; border-top: 1px solid var(--line); }
+.feed-end { padding-top: 14px; border-top: 1px solid var(--line); color: var(--muted); font-size: 14px; }
+
+.form-group { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 16px 18px 18px; }
+.group-title { display: flex; align-items: baseline; gap: 10px; margin-bottom: 12px; }
+.group-title h2 { font-size: 1rem; font-weight: 600; letter-spacing: .01em; }
+.group-title .w { font: 600 10.5px var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 16px; }
+.field { min-width: 0; }
+.field.wide { grid-column: 1 / -1; }
+@media (max-width: 620px) { .fields { grid-template-columns: minmax(0, 1fr); } }
+label, .label { display: block; font-weight: 600; font-size: 13.5px; margin-bottom: 5px; }
+.req { color: var(--bad); }
+input[type="text"], input[type="search"], input[type="time"], input[type="datetime-local"], select, textarea {
+  width: 100%; min-height: 40px; padding: 8px 10px; border: 1px solid var(--line-strong); border-radius: 6px;
+  background: var(--surface); color: var(--ink); font: 15px/1.45 var(--font-body);
+}
+input.dt { font-family: var(--font-mono); font-size: 14px; font-variant-numeric: tabular-nums; }
+input[aria-invalid="true"] { border-color: var(--warn); background: var(--warn-soft); }
+textarea { resize: vertical; display: block; }
+input::placeholder, textarea::placeholder { color: var(--muted); opacity: .8; }
+.field.invalid input, .field.invalid select, .field.invalid textarea { border-color: var(--bad); background: var(--bad-soft); }
+.help { font-size: 12.5px; color: var(--muted); margin-top: 4px; }
+.input-row { display: flex; gap: 6px; }
+.input-row input { flex: 1; min-width: 0; }
+.tl-list { list-style: none; margin: 0 0 10px; padding: 0; display: grid; gap: 8px; counter-reset: tl; }
+.tl-row { display: grid; grid-template-columns: 26px 142px minmax(0, 1fr) auto; gap: 8px; align-items: start; counter-increment: tl; }
+.tl-row::before { content: counter(tl); font: 600 12px/40px var(--font-mono); color: var(--muted); text-align: right; }
+.tl-time { display: flex; gap: 4px; }
+.tl-time input { min-width: 0; }
+.icon-btn { display: inline-grid; place-items: center; width: 34px; height: 40px; border: 1px solid transparent; border-radius: 6px; background: transparent; color: var(--muted); cursor: pointer; }
+.icon-btn:hover { background: var(--bad-soft); color: var(--bad); }
+.icon-btn svg { width: 16px; height: 16px; }
+@media (max-width: 620px) {
+  .tl-row { grid-template-columns: 22px minmax(0, 1fr) auto; }
+  .tl-row .tl-time { grid-column: 2; grid-row: 1; }
+  .tl-row .icon-btn { grid-column: 3; grid-row: 1; }
+  .tl-row textarea { grid-column: 2 / -1; grid-row: 2; }
+}
+.empty-tl { color: var(--muted); font-size: 14px; padding: 10px 12px; border: 1px dashed var(--line-strong); border-radius: 6px; margin-bottom: 10px; }
+.formbar { position: sticky; bottom: 0; z-index: 5; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 12px 14px calc(12px + env(safe-area-inset-bottom, 0px)); background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); }
+.draft-status { font: 500 12.5px var(--font-mono); color: var(--muted); }
+
+/* Review */
+.score { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; margin-top: 8px; }
+.score-num { font: 700 52px/1 var(--font-display); font-variant-numeric: tabular-nums; }
+.score-num span { font-size: 26px; color: var(--muted); font-weight: 600; }
+.score-text { flex: 1 1 220px; }
+.score-text strong { font-size: 1.1rem; }
+.meter { height: 10px; margin-top: 10px; background: var(--surface-2); border-radius: 99px; overflow: hidden; }
+.meter span { display: block; height: 100%; background: var(--accent); border-radius: 99px; }
+.w-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; margin-top: 16px; }
+.w-tile { padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; }
+.w-tile span { display: block; font: 600 10.5px var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.w-tile b { font: 600 18px var(--font-mono); font-variant-numeric: tabular-nums; }
+.w-tile.full { border-color: var(--ok); background: var(--ok-soft); }
+.w-tile.full b { color: var(--ok); }
+.w-tile.none b { color: var(--bad); }
+@media (max-width: 620px) { .w-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.checklist { list-style: none; margin: 10px 0 0; padding: 0; }
+.checklist li { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 10px; padding: 9px 0; border-top: 1px solid var(--line); }
+.checklist li:first-child { border-top: 0; }
+.mark { width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; margin-top: 1px; }
+.mark svg { width: 12px; height: 12px; }
+.lvl-ok .mark { background: var(--ok-soft); color: var(--ok); }
+.lvl-bad .mark { background: var(--bad-soft); color: var(--bad); }
+.lvl-warn .mark { background: var(--warn-soft); color: var(--warn); }
+.fact-w { font: 600 10.5px var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-right: 6px; }
+.hint { font-size: 13.5px; color: var(--muted); margin-top: 2px; }
+.notice { padding: 12px 14px; border-radius: 6px; background: var(--warn-soft); color: var(--warn); font-size: 14px; margin-top: 14px; }
+
+/* Document view */
+.doc { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: clamp(18px, 3vw, 32px); }
+.doc-head { padding-bottom: 16px; border-bottom: 2px solid var(--ink); }
+.doc-head h2 { font-size: clamp(1.35rem, 2.6vw, 1.75rem); margin-top: 6px; }
+.doc-meta { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); margin: 16px 0 0; border-top: 1px solid var(--line); border-left: 1px solid var(--line); }
+.doc-meta > div { padding: 8px 12px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); min-width: 0; }
+.doc-meta dt { font: 600 10.5px var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.doc-meta dd { margin: 3px 0 0; font-weight: 600; font-size: 14.5px; overflow-wrap: anywhere; }
+.doc-section { margin-top: 22px; }
+.doc-section h3 { font-size: .95rem; letter-spacing: .02em; text-transform: uppercase; color: var(--accent-strong); padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+.kv { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 4px 18px; padding: 9px 0; border-bottom: 1px dashed var(--line); margin: 0; }
+.kv dt { font-weight: 600; font-size: 14px; color: var(--muted); }
+.kv dd { margin: 0; overflow-wrap: anywhere; }
+.not-recorded { color: var(--bad); font-style: italic; font-size: 14px; }
+@media (max-width: 620px) { .kv { grid-template-columns: minmax(0, 1fr); } }
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { text-align: left; vertical-align: top; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+th { font: 600 11px var(--font-mono); letter-spacing: .07em; text-transform: uppercase; color: var(--muted); background: var(--surface-2); white-space: nowrap; }
+tbody tr:last-child td { border-bottom: 0; }
+td.t { font-family: var(--font-mono); color: var(--stamp); font-weight: 600; white-space: nowrap; width: 1%; }
+td.nowrap { white-space: nowrap; }
+.doc .table-wrap { margin-top: 10px; }
+.record-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.check-summary { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+details.md { margin-top: 14px; }
+details.md summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
+details.md pre { margin: 8px 0 0; padding: 14px; overflow-x: auto; background: var(--surface-2); border-radius: 6px; font: 13px/1.5 var(--font-mono); white-space: pre; }
+
+/* Records view */
+.page-head { display: flex; align-items: flex-end; gap: 14px 24px; flex-wrap: wrap; margin-bottom: 18px; }
+.page-head .lead { margin-top: 8px; }
+.toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 14px; }
+.toolbar input[type="search"] { flex: 1 1 260px; width: auto; }
+.toolbar select { width: auto; flex: 0 1 190px; }
+.store-mode { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
+.store-mode i { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); display: inline-block; }
+.store-mode.local i { background: var(--warn); }
+.records tbody tr { cursor: pointer; }
+.records tbody tr:hover td { background: var(--surface-2); }
+.records td a { color: var(--ink); text-decoration: none; font-weight: 600; }
+.records td a:hover { color: var(--accent-strong); text-decoration: underline; }
+.new-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 14px; font-size: 14px; color: var(--muted); }
+.empty { text-align: center; padding: 44px 20px; border: 1px dashed var(--line-strong); border-radius: var(--r); background: var(--surface); }
+.empty h2 { margin-bottom: 6px; }
+.empty p { color: var(--muted); max-width: 52ch; margin: 0 auto 16px; }
+.empty .btn-row { justify-content: center; }
+
+/* Guide */
+.guide { display: grid; gap: 18px; }
+.guide > * { min-width: 0; }
+.guide .table-wrap td:first-child { font-weight: 600; white-space: nowrap; }
+.rules { margin: 10px 0 0; padding-left: 20px; display: grid; gap: 6px; }
+.compare { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 12px; }
+.compare > div { padding: 14px; border-radius: 6px; border: 1px solid var(--line); }
+.compare .bad-ex { border-top: 3px solid var(--bad); }
+.compare .good-ex { border-top: 3px solid var(--ok); }
+.compare h3 { font-size: .95rem; margin-bottom: 6px; }
+@media (max-width: 700px) { .compare { grid-template-columns: minmax(0, 1fr); } }
+
+.toast { position: fixed; left: 50%; bottom: calc(22px + env(safe-area-inset-bottom, 0px)); z-index: 40; max-width: min(560px, calc(100vw - 32px)); transform: translate(-50%, 16px); opacity: 0; pointer-events: none; padding: 11px 16px; border-radius: 8px; background: var(--ink); color: var(--bg); font-size: 14px; box-shadow: var(--shadow); transition: opacity .18s, transform .18s; }
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+</style>
+<!-- app:head-end -->
 </head>
-<body data-root="" data-page="home" data-updated="2026-10-28" data-status="Approved" data-version="1.0">
-  <a class="skip-link" href="#content">Skip to content</a>
-  <header class="topbar" id="topbar"></header>
-  <div class="layout">
-    <nav class="sidebar" id="sidebar" aria-label="Documentation"></nav>
-    <main class="content" id="content" tabindex="-1">
-      <article class="doc">
-
-        <div class="hero">
-          <header class="doc-header">
-            <p class="eyebrow">System Administration and Maintenance · Albao Group</p>
-            <h1>Professional Practices and Documentation</h1>
-            <p class="lead">This site is both our report and a live example of it. Every page follows the documentation practices it describes, so the site itself is the demonstration.</p>
-          </header>
-          <div class="hero-actions">
-            <a class="btn btn-primary" href="pages/documentation-standards.html">Start reading →</a>
-            <a class="btn" href="pages/samples/index.html">See sample documents</a>
-            <button class="btn" type="button" onclick="document.querySelector('.search-trigger').click()">Try the search</button>
-          </div>
-        </div>
-
-        <h2 id="report-topics">Report topics</h2>
-        <p>The report is divided into three topics. Each one is a separate page with its own table of contents, metadata and revision details.</p>
-
-        <div class="card-grid">
-          <a class="card" href="pages/documentation-standards.html">
-            <span class="card-num">1</span>
-            <h3>Documentation Standards</h3>
-            <p>What good sysadmin documentation looks like: types, qualities, style rules, naming, versioning and document control.</p>
-            <span class="card-link">Read topic →</span>
-          </a>
-          <a class="card" href="pages/it-policies-compliance.html">
-            <span class="card-num">2</span>
-            <h3>IT Policies &amp; Compliance</h3>
-            <p>Policy vs. standard vs. procedure, the core IT policies, the policy lifecycle, laws such as the Data Privacy Act, and audits.</p>
-            <span class="card-link">Read topic →</span>
-          </a>
-          <a class="card" href="pages/ethics-in-sysadmin.html">
-            <span class="card-num">3</span>
-            <h3>Ethics in System Administration</h3>
-            <p>Privacy, privileged access, honesty and conflicts of interest, with codes of ethics, a decision framework and interactive scenarios.</p>
-            <span class="card-link">Read topic →</span>
-          </a>
-        </div>
-
-        <h2 id="why-documentation">Why documentation matters</h2>
-        <p>System administrators keep services running, often under pressure and often at 3 a.m. Documentation turns one person's knowledge into the team's knowledge. Without it, every outage starts from zero and every staff departure takes knowledge with it.</p>
-        <div class="compare">
-          <div class="dont">
-            <h4>Without documentation</h4>
-            <ul>
-              <li>“Only one person knows how the backup works.”</li>
-              <li>Outages last longer because steps are guessed.</li>
-              <li>Audits fail for lack of evidence.</li>
-              <li>New hires take months to become useful.</li>
-            </ul>
-          </div>
-          <div class="do">
-            <h4>With documentation</h4>
-            <ul>
-              <li>Anyone on shift can follow the runbook.</li>
-              <li>Changes are repeatable and reversible.</li>
-              <li>Policies and logs prove compliance.</li>
-              <li>Onboarding is self-service.</li>
-            </ul>
-          </div>
-        </div>
-
-        <h2 id="features">Documentation features shown on this site</h2>
-        <p>A documentation system is more than a pile of text files. These are the features a good documentation website offers. Each one is used somewhere on this site, so you can try them out.</p>
-
-        <ul class="feature-list">
-          <li><strong>Navigation &amp; structure</strong><span>Sidebar, breadcrumbs and previous/next links. See every page.</span></li>
-          <li><strong>Full-text search</strong><span>Press <kbd>Ctrl</kbd> <kbd>K</kbd> or <kbd>/</kbd> and search for “password”.</span></li>
-          <li><strong>Table of contents</strong><span>“On this page” panel that highlights the section you are reading.</span></li>
-          <li><strong>Document control</strong><span>Document ID, version, owner, status and review date. <a href="pages/samples/sop-user-provisioning.html">See the SOP</a>.</span></li>
-          <li><strong>Status badges</strong><span>Draft, In Review and Approved, shown at the top of each page.</span></li>
-          <li><strong>Revision history</strong><span>A change log at the end of every sample document.</span></li>
-          <li><strong>Callouts</strong><span>Note, Tip, Warning and Danger boxes for important information.</span></li>
-          <li><strong>Code blocks</strong><span>Commands with a one-click <em>Copy</em> button.</span></li>
-          <li><strong>Tabs</strong><span>The same steps for Linux and Windows. <a href="pages/samples/sop-user-provisioning.html#procedure">Try it</a>.</span></li>
-          <li><strong>Tables &amp; diagrams</strong><span>Inventories, IP plans and a <a href="pages/samples/network-inventory.html">network diagram</a>.</span></li>
-          <li><strong>Checklists</strong><span>Interactive, with progress saved in your browser. <a href="pages/it-policies-compliance.html#compliance-checklist">Try it</a>.</span></li>
-          <li><strong>Templates</strong><span>Copy or download ready-made Markdown templates. <a href="pages/templates.html">Templates</a>.</span></li>
-          <li><strong>Glossary</strong><span>Searchable list of terms, plus hover definitions on <abbr title="Standard Operating Procedure">SOP</abbr>-style abbreviations.</span></li>
-          <li><strong>Deep links</strong><span>Hover a heading and click <code>#</code> to link straight to that section.</span></li>
-          <li><strong>Print / PDF</strong><span>Clean print layout. Use the printer icon under any page title.</span></li>
-          <li><strong>Dark mode</strong><span>The sun/moon icon in the top bar. Your choice is remembered.</span></li>
-          <li><strong>Feedback</strong><span>“Was this page helpful?” at the end of every page.</span></li>
-          <li><strong>Docs as code</strong><span>Plain files in Git, so every change is reviewed and tracked. <a href="pages/about.html#how-this-site-works">How it works</a>.</span></li>
-        </ul>
-
-        <h2 id="site-map">How this site is organized</h2>
-        <p>Good documentation has a predictable structure, so readers know where to look before they search. This site uses the same layout as most professional docs portals:</p>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr><th>Section</th><th>Purpose</th><th>Pages</th></tr>
-            </thead>
-            <tbody>
-              <tr><td><strong>Report Topics</strong></td><td>Explanations: the <em>why</em> and <em>what</em></td><td><a href="pages/documentation-standards.html">Standards</a>, <a href="pages/it-policies-compliance.html">Policies &amp; Compliance</a>, <a href="pages/ethics-in-sysadmin.html">Ethics</a></td></tr>
-              <tr><td><strong>Sample Documents</strong></td><td>Real-world examples a sysadmin team writes</td><td><a href="pages/samples/sop-user-provisioning.html">SOP</a>, <a href="pages/samples/runbook-backup-restore.html">Runbook</a>, <a href="pages/samples/incident-report.html">Incident Report</a>, <a href="pages/samples/change-request.html">Change Request</a>, <a href="pages/samples/network-inventory.html">Network &amp; Inventory</a></td></tr>
-              <tr><td><strong>Resources</strong></td><td>Reference material to reuse</td><td><a href="pages/templates.html">Templates</a>, <a href="pages/glossary.html">Glossary</a>, <a href="pages/about.html">About &amp; References</a></td></tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div class="callout tip">
-          <p class="callout-title">Presenter tip</p>
-          <p>For a quick walkthrough: open a topic page, press <kbd>Ctrl</kbd> <kbd>K</kbd> and search for <em>backup</em>, open the <a href="pages/samples/sop-user-provisioning.html">SOP</a> to show document control and tabs, then switch to dark mode and print a page to PDF.</p>
-        </div>
-
-      </article>
-    </main>
-    <aside class="toc" id="toc" aria-label="On this page"></aside>
+<body>
+<!-- app:body-start -->
+<header class="appbar">
+  <div class="wrap appbar-inner">
+    <a class="brand" href="#scenarios">
+      <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3.5" width="18" height="25" rx="2.5"/><path d="M10 10h8M10 15h5"/><circle cx="22" cy="22" r="6.5" fill="var(--surface)"/><path d="M22 18.8V22l2.2 1.4"/></svg>
+      <span>SysAdmin Documentation Lab</span>
+    </a>
+    <nav class="tabs" aria-label="Sections">
+      <a href="#scenarios" data-tab="scenarios">Scenarios</a>
+      <a href="#records" data-tab="records">Records <span class="count" id="rec-count">0</span></a>
+      <a href="#guide" data-tab="guide">How to document</a>
+    </nav>
+    <div class="clock" aria-label="Current date and time"><span id="clock-date"></span><strong id="clock-time"></strong><span id="clock-tz"></span></div>
   </div>
-  <script src="assets/js/search-index.js"></script>
-  <script src="assets/js/site.js"></script>
+</header>
+<main class="wrap" id="app" tabindex="-1"></main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ------------------------------------------------------------------ helpers */
+  const $ = (s, c) => (c || document).querySelector(s);
+  const $$ = (s, c) => Array.from((c || document).querySelectorAll(s));
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const nl = (s) => esc(s).replace(/\n/g, '<br>');
+  const pad = (n) => String(n).padStart(2, '0');
+  const ymd = (d) => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  const hm = (d) => pad(d.getHours()) + ':' + pad(d.getMinutes());
+  const nowLocal = () => { const d = new Date(); return ymd(d) + ' ' + hm(d); };
+  // Accept 9:42, 0942, 9.42, 2:05 pm ... and return 24-hour HH:MM ('' if empty, null if unreadable).
+  function normTime(v) {
+    const s = String(v || '').trim().toLowerCase().replace(/\s+/g, ' ');
+    if (!s) return '';
+    const m = s.match(/^(\d{1,2})[:.h]?(\d{2})\s*(am|pm|a\.m\.|p\.m\.)?$/);
+    if (!m) return null;
+    let h = Number(m[1]);
+    const mi = Number(m[2]);
+    if (m[3]) { if (h < 1 || h > 12) return null; h = (h % 12) + (m[3].charAt(0) === 'p' ? 12 : 0); }
+    if (h > 23 || mi > 59) return null;
+    return pad(h) + ':' + pad(mi);
+  }
+  // Accept 2026-10-28 9:42, 2026/10/28T09:42 ... and return YYYY-MM-DD HH:MM.
+  function normDT(v) {
+    const s = String(v || '').trim();
+    if (!s) return '';
+    const m = s.match(/^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})(?:[ T]+(.+))?$/);
+    if (!m) return null;
+    const mo = Number(m[2]), d = Number(m[3]);
+    if (mo < 1 || mo > 12 || d < 1 || d > 31) return null;
+    const date = m[1] + '-' + pad(mo) + '-' + pad(d);
+    if (!m[4]) return date;
+    const t = normTime(m[4]);
+    return t ? date + ' ' + t : null;
+  }
+  const fmtDT = (v) => (v ? String(v).replace('T', ' ') : '');
+  const fmtStamp = (iso) => { if (!iso) return ''; const d = new Date(iso); return ymd(d) + ' ' + hm(d); };
+  const clone = (o) => JSON.parse(JSON.stringify(o));
+  const slug = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const parseYMD = (s) => { const p = s.split('-').map(Number); return new Date(p[0], p[1] - 1, p[2]); };
+  const addDays = (s, n) => { const d = parseYMD(s); d.setDate(d.getDate() + n); return ymd(d); };
+  const dayName = (s) => DAYS[parseYMD(s).getDay()];
+  const nextMonday = (s) => { const dow = parseYMD(s).getDay(); return addDays(s, ((8 - dow) % 7) || 7); };
+  // Replace {date}, {date-1}, {date+3} and {nextMonday} with real dates relative to the scenario date.
+  const fill = (s, start) => (typeof s !== 'string' || !start) ? s :
+    s.replace(/\{date([+-]\d+)?\}|\{nextMonday\}/g, (m, off) => m === '{nextMonday}' ? nextMonday(start) : (off ? addDays(start, Number(off)) : start));
+  // Time pattern that also matches "9:42" and the time inside "2026-10-28T09:42".
+  const T = (hhmm) => { const p = hhmm.split(':'); const h = p[0].charAt(0) === '0' ? '0?' + p[0].charAt(1) : p[0]; return new RegExp('(?:^|\\D)' + h + ':' + p[1] + '(?!\\d)'); };
+
+  const tzLabel = (() => {
+    const off = -new Date().getTimezoneOffset();
+    const sign = off >= 0 ? '+' : '-';
+    const h = Math.floor(Math.abs(off) / 60), m = Math.abs(off) % 60;
+    const utc = 'UTC' + sign + h + (m ? ':' + pad(m) : '');
+    let zone = '';
+    try { zone = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (e) { /* ignore */ }
+    return zone === 'Asia/Manila' ? 'PHT (' + utc + ')' : utc;
+  })();
+
+  const ICON = {
+    check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>',
+    x: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+    warn: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><line x1="12" y1="6" x2="12" y2="13"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>',
+    trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6M10 11v6M14 11v6M9 6V4h6v2"/></svg>'
+  };
+
+  const LS = {
+    get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* storage blocked */ } },
+    del(k) { try { localStorage.removeItem(k); } catch (e) { /* storage blocked */ } }
+  };
+  const KEY_RECORDS = 'doclab.records.v1', KEY_DRAFT = 'doclab.draft.v1', KEY_AUTHOR = 'doclab.author';
+
+  /* --------------------------------------------------------- record templates */
+  const FIELDS = {
+    title: { label: 'Short title', type: 'text', req: true, group: 'summary', wide: true, ph: 'e.g. Accounting shared drive unavailable', help: 'One line that says what happened and to which system.' },
+    occurred: { label: 'Date & time reported', type: 'datetime', req: true, group: 'when', help: 'When it happened or was first reported.' },
+    reporter: { label: 'Reported by', type: 'text', req: true, group: 'when', ph: 'Name, position or department' },
+    contact: { label: 'Contact details', type: 'text', group: 'when', ph: 'Local number, mobile or email' },
+    location: { label: 'Department / location', type: 'text', group: 'when', ph: 'Department, floor, building' },
+    affected: { label: 'Affected system / asset', type: 'text', req: true, group: 'what', ph: 'Hostname, service, asset tag' },
+    category: { label: 'Category', type: 'select', group: 'what', options: ['Hardware', 'Software', 'Network', 'Access / Accounts', 'Security', 'Environment / Facilities', 'Backup / Storage', 'Other'] },
+    severity: { label: 'Severity', type: 'select', req: true, group: 'what', options: ['Low', 'Medium', 'High', 'Critical'], help: 'How serious is the impact on the business?' },
+    impact: { label: 'Impact', type: 'textarea', group: 'what', rows: 2, ph: 'Who and how many are affected? What can they not do? Any deadline?' },
+    description: { label: 'What happened', type: 'textarea', req: true, group: 'what', rows: 3, ph: 'Symptoms in the reporter’s words. Copy exact error messages.' },
+    request: { label: 'Request details', type: 'textarea', req: true, group: 'what', rows: 3, ph: 'What exactly is requested, for whom, and by when?' },
+    approval: { label: 'Approval / reference no.', type: 'text', req: true, group: 'what', wide: true, ph: 'Who approved it; ticket or approval numbers' },
+    dataInvolved: { label: 'Data involved', type: 'textarea', group: 'what', rows: 2, ph: 'What information could have been exposed, changed or lost?' },
+    personalData: { label: 'Personal data affected?', type: 'select', req: true, group: 'what', options: ['Yes', 'No', 'Unknown'], help: 'If yes or unknown, inform the Data Protection Officer (Data Privacy Act, 72-hour rule).' },
+    timeline: { label: 'Actions taken (timeline)', type: 'timeline', req: true, group: 'actions' },
+    cause: { label: 'Cause / findings', type: 'textarea', group: 'resolve', rows: 2, ph: 'What caused it? If unknown, write “Unknown, under investigation”.' },
+    resolution: { label: 'Resolution', type: 'textarea', group: 'resolve', rows: 2, ph: 'What fixed it, or how the work was completed.' },
+    notified: { label: 'People notified', type: 'textarea', group: 'resolve', rows: 2, ph: 'Who was informed and when (manager, DPO, users)?' },
+    resolved: { label: 'Date & time resolved', type: 'datetime', group: 'resolve' },
+    status: { label: 'Status', type: 'select', req: true, group: 'resolve', options: ['Open', 'In progress', 'Pending', 'Resolved', 'Closed'] },
+    followup: { label: 'Follow-up actions', type: 'textarea', group: 'follow', rows: 2, ph: 'What still needs to be done, by whom, to prevent a repeat?' }
+  };
+  const GROUPS = [
+    ['summary', 'Summary', ''],
+    ['when', 'When & who', 'When · Who · Where'],
+    ['what', 'What happened', 'What · Why'],
+    ['actions', 'Actions taken', 'How · When'],
+    ['resolve', 'Cause & resolution', 'Why · How'],
+    ['follow', 'Follow-up', '']
+  ];
+  const TEMPLATES = {
+    incident: { label: 'Incident Report', prefix: 'INC', use: 'Something broke or stopped working: outages, errors, failures.',
+      fields: ['title', 'occurred', 'reporter', 'contact', 'location', 'affected', 'category', 'severity', 'impact', 'description', 'timeline', 'cause', 'resolution', 'resolved', 'status', 'followup'] },
+    request: { label: 'Service Request', prefix: 'REQ', use: 'Someone asks for something: new accounts, access, software, equipment.',
+      fields: ['title', 'occurred', 'reporter', 'contact', 'location', 'affected', 'request', 'approval', 'timeline', 'resolution', 'resolved', 'status', 'followup'],
+      labels: { occurred: 'Date & time requested', reporter: 'Requested by', affected: 'Requested for (user / system)', resolution: 'Work completed', resolved: 'Date & time completed' } },
+    security: { label: 'Security Incident Report', prefix: 'SEC', use: 'Security is at risk: phishing, hacked accounts, malware, lost or stolen devices.',
+      fields: ['title', 'occurred', 'reporter', 'contact', 'location', 'affected', 'category', 'severity', 'impact', 'description', 'dataInvolved', 'personalData', 'timeline', 'cause', 'resolution', 'notified', 'resolved', 'status', 'followup'] },
+    maintenance: { label: 'Maintenance Log', prefix: 'MNT', use: 'Routine checks and upkeep: backups, patches, hardware checks, and problems found during them.',
+      fields: ['title', 'occurred', 'reporter', 'location', 'affected', 'category', 'severity', 'description', 'timeline', 'cause', 'resolution', 'resolved', 'status', 'followup'],
+      labels: { occurred: 'Date & time detected', reporter: 'Detected by / source', description: 'What was found' } }
+  };
+  const labelFor = (tplKey, key) => { const t = TEMPLATES[tplKey]; return (t.labels && t.labels[key]) || FIELDS[key].label; };
+  const has = (d, key) => key === 'timeline' ? (d.timeline || []).some((e) => (e.t || '').trim() || (e.a || '').trim()) : !!String((d.fields || {})[key] || '').trim();
+
+  /* --------------------------------------------------------------- scenarios */
+  const W5H = ['Who', 'What', 'When', 'Where', 'Why', 'How'];
+  const SCENARIOS = [
+    {
+      id: 'shared-drive', template: 'incident', level: 'Easy', minutes: 10,
+      title: 'Shared drive is down',
+      summary: 'The Accounting team can’t open the S: drive, and payroll is due at noon.',
+      role: 'You are the system administrator on duty at Example Corp’s IT department. Record the incident as it unfolds.',
+      events: [
+        { t: '09:42', ch: 'Phone call', from: 'Maria Santos · Accounting, 2nd floor · local 2231',
+          body: '“Hi, this is Maria Santos from Accounting. None of us can open the S: drive. When I click it, I get “Windows cannot access \\\\FS01\\Accounting”. It worked yesterday. There are three of us in today, and we need the payroll file before 12 noon.”' },
+        { t: '09:50', ch: 'Your investigation', from: 'File server FS01',
+          body: 'The server is up and responds to ping. In Services, the Server service (LanmanServer) is Stopped. The System event log shows Event ID 7034 at 09:31: “The Server service terminated unexpectedly.”' },
+        { t: '09:58', ch: 'Your action', from: 'File server FS01',
+          body: 'You start the Server service and set its recovery option to restart automatically if it fails again.' },
+        { t: '10:03', ch: 'Phone call', from: 'Maria Santos · Accounting',
+          body: '“It’s working now. I can open the payroll folder. Thank you!”' },
+        { t: '10:15', ch: 'Note', from: 'You',
+          body: 'You still don’t know why the service crashed. You plan to review FS01’s logs and recently installed updates this afternoon.' }
+      ],
+      facts: [
+        { w: 'When', label: 'Date of the incident', any: ['{date}'], hint: 'Always record the full date, not only the time.' },
+        { w: 'When', label: 'Time it was reported (09:42)', any: [T('09:42')], hint: 'Maria called at 09:42.' },
+        { w: 'Who', label: 'Reported by Maria Santos', any: ['santos'] },
+        { w: 'Where', label: 'Department: Accounting, 2nd floor', any: ['accounting'] },
+        { w: 'Who', label: 'Contact: local 2231', any: ['2231'], hint: 'Record how to reach the reporter.' },
+        { w: 'What', label: 'Affected system: FS01 / S: drive', any: ['fs01', 'fs-01'] },
+        { w: 'What', label: 'Exact error message', any: ['cannot access'], hint: 'Copy error text word for word: “Windows cannot access \\\\FS01\\Accounting”.' },
+        { w: 'Who', label: 'Number of users affected (3)', any: [/\b(3|three)\b(?![:.]\d)/], hint: 'Maria said three people are affected.' },
+        { w: 'Why', label: 'Business impact: payroll file needed before 12:00', any: ['payroll'], hint: 'The deadline explains why this is urgent.' },
+        { w: 'Why', label: 'Cause: Server service stopped (Event ID 7034)', any: ['7034', 'lanmanserver', 'server service'] },
+        { w: 'How', label: 'Time the fix was applied (09:58)', any: [T('09:58')] },
+        { w: 'When', label: 'Time service was restored (10:03)', any: [T('10:03')] },
+        { w: 'How', label: 'Follow-up recorded', check: (d) => has(d, 'followup'), hint: 'The crash cause is still unknown, so a follow-up is needed.' }
+      ],
+      model: {
+        title: 'Accounting S: drive (\\\\FS01\\Accounting) unavailable', occurred: '{date} 09:42', reporter: 'Maria Santos, Accounting', contact: 'Local 2231',
+        location: 'Accounting Department, 2nd floor', affected: 'File server FS01, share \\\\FS01\\Accounting (S: drive)', category: 'Software', severity: 'High',
+        impact: '3 Accounting staff could not open shared files. Payroll file needed before 12:00.',
+        description: 'Users get “Windows cannot access \\\\FS01\\Accounting” when opening the S: drive. It worked the previous day.',
+        cause: 'The Server service (LanmanServer) on FS01 stopped unexpectedly at 09:31 (Event ID 7034). Reason for the crash not yet known.',
+        resolution: 'Started the Server service and set it to restart automatically on failure.', resolved: '{date} 10:03', status: 'Resolved',
+        followup: 'Review FS01 system logs and recently installed updates this afternoon to find why the service crashed.',
+        timeline: [
+          ['09:42', 'Call from Maria Santos (Accounting, local 2231): S: drive shows “Windows cannot access \\\\FS01\\Accounting”. 3 users affected; payroll due 12:00.'],
+          ['09:50', 'FS01 up and responding to ping. Server service (LanmanServer) stopped. Event ID 7034 logged at 09:31.'],
+          ['09:58', 'Started the Server service; set recovery to restart on failure.'],
+          ['10:03', 'Maria Santos confirmed access restored.'],
+          ['10:15', 'Planned review of FS01 logs and updates for this afternoon.']
+        ]
+      }
+    },
+    {
+      id: 'new-hire', template: 'request', level: 'Easy', minutes: 10,
+      title: 'Accounts for a new employee',
+      summary: 'HR asks for email, VPN and system access for a developer who starts on Monday.',
+      role: 'You are a system administrator at Example Corp. Record the request and every step you take to complete it.',
+      events: [
+        { t: '08:15', ch: 'Email', from: 'Liza Reyes · HR Officer · local 1105',
+          body: 'Subject: New hire accounts (REQ-1042)\n\nHi IT team,\n\nPlease prepare accounts for our new hire, Mark Villanueva, Junior Developer in the Software Development team. His first day is Monday, {nextMonday}.\n\nHe needs:\n• Company email\n• VPN access\n• Membership in the Developers group (for the GitLab server)\n\nHis manager, Engr. Ramon Cruz, approved this request (approval form attached).\n\nThanks,\nLiza' },
+        { t: '09:30', ch: 'Your action', from: 'Active Directory',
+          body: 'You create the account mvillanueva in the Staff OU, add it to the Developers group, and create the mailbox mvillanueva@corp.example.com.' },
+        { t: '09:45', ch: 'Your action', from: 'Security team',
+          body: 'VPN access needs approval from the Security team. You send them a request and note it in the ticket. The request is now waiting for Security.' },
+        { t: '10:20', ch: 'Email', from: 'Security team',
+          body: '“VPN access for mvillanueva is approved. Approval reference: SEC-APR-311.”' },
+        { t: '10:25', ch: 'Your action', from: 'Active Directory',
+          body: 'You add mvillanueva to the VPN-Users group and set the account to require a password change at first login. You send the temporary password to Mark’s registered mobile number by SMS, separately from the username.' },
+        { t: '10:30', ch: 'Email', from: 'You → Liza Reyes',
+          body: 'You tell Liza that all accounts are ready for Monday, and close the request.' }
+      ],
+      facts: [
+        { w: 'When', label: 'Date of the request', any: ['{date}'] },
+        { w: 'When', label: 'Time received (08:15)', any: [T('08:15')] },
+        { w: 'Who', label: 'Requested by Liza Reyes (HR)', any: ['reyes'] },
+        { w: 'Who', label: 'Requested for Mark Villanueva', any: ['villanueva'] },
+        { w: 'What', label: 'Position: Junior Developer', any: ['junior developer'] },
+        { w: 'When', label: 'Start date: Monday, {nextMonday}', any: ['{nextMonday}'], hint: 'Write the actual date, not only “Monday”.' },
+        { w: 'What', label: 'Ticket number REQ-1042', any: ['1042'] },
+        { w: 'Who', label: 'Approved by Engr. Ramon Cruz', any: ['cruz'], hint: 'Every access request needs a recorded approver.' },
+        { w: 'What', label: 'Access requested: email, VPN, Developers group', all: ['vpn', 'developer'], any: ['email', 'mailbox'] },
+        { w: 'What', label: 'Username created: mvillanueva', any: ['mvillanueva'] },
+        { w: 'How', label: 'VPN approval reference SEC-APR-311', any: ['311'] },
+        { w: 'How', label: 'Password sent separately; change required at first login', any: ['sms', 'separate', 'first login'], hint: 'Record how credentials were handed over, never the password itself.' },
+        { w: 'When', label: 'Time completed (10:25–10:30)', any: [T('10:25'), T('10:30')] }
+      ],
+      model: {
+        title: 'New hire accounts for Mark Villanueva (REQ-1042)', occurred: '{date} 08:15', reporter: 'Liza Reyes, HR Officer', contact: 'Local 1105',
+        location: 'Human Resources', affected: 'Mark Villanueva, Junior Developer, Software Development (starts Monday, {nextMonday})',
+        request: 'Create company email, VPN access and Developers group membership (GitLab) for new hire Mark Villanueva before his first day, Monday {nextMonday}.',
+        approval: 'Approved by Engr. Ramon Cruz (manager). Ticket REQ-1042. VPN approved by Security, ref. SEC-APR-311.',
+        resolution: 'Account mvillanueva, mailbox, Developers and VPN-Users memberships created.', resolved: '{date} 10:30', status: 'Closed',
+        followup: 'On {nextMonday}, confirm Mark can sign in and help him enrol in MFA.',
+        timeline: [
+          ['08:15', 'Request received by email from Liza Reyes (HR), ticket REQ-1042, approved by Engr. Ramon Cruz.'],
+          ['09:30', 'Created AD account mvillanueva (Staff OU), added to Developers, created mailbox mvillanueva@corp.example.com.'],
+          ['09:45', 'Sent VPN access request to Security team; waiting for approval.'],
+          ['10:20', 'Security approved VPN access (SEC-APR-311).'],
+          ['10:25', 'Added mvillanueva to VPN-Users; password change required at first login; temporary password sent by SMS, separately from the username.'],
+          ['10:30', 'Informed Liza Reyes that the accounts are ready. Request closed.']
+        ]
+      }
+    },
+    {
+      id: 'phishing', template: 'security', level: 'Medium', minutes: 15,
+      title: 'Phishing email: account hacked',
+      summary: 'A salesperson entered his password on a fake login page. Someone else is now in his mailbox.',
+      role: 'You are the system administrator handling security alerts at Example Corp. Record everything: times matter in a security incident.',
+      events: [
+        { t: '14:05', ch: 'Security alert', from: 'Email security gateway',
+          body: 'User jgarcia (Jose Garcia, Sales) clicked a link at 13:52 in an email titled “Your mailbox is full – verify now”. The link opened a fake Microsoft 365 sign-in page.' },
+        { t: '14:08', ch: 'Phone call', from: 'Jose Garcia · Sales · local 3310',
+          body: '“I think I typed my password on that page. It looked real. Sorry!”' },
+        { t: '14:12', ch: 'Your investigation', from: 'Sign-in logs',
+          body: 'A successful sign-in to Jose’s account at 13:58 from IP address 203.0.113.45, located in another country. Jose was in the office at the time.' },
+        { t: '14:15', ch: 'Your action', from: 'Microsoft 365 admin',
+          body: 'You reset Jose’s password, sign him out of all sessions, and turn on multi-factor authentication (MFA) for his account.' },
+        { t: '14:30', ch: 'Your investigation', from: 'Mailbox rules',
+          body: 'You find an inbox rule created at 14:01 that forwarded all incoming mail to an outside address, invoice.dept@example.net. You delete the rule. 42 emails were forwarded, including a customer list with names and mobile numbers.' },
+        { t: '14:50', ch: 'Your action', from: 'Notification',
+          body: 'You report the incident to the IT Manager, Engr. Paolo Dizon, and to the Data Protection Officer (DPO), Atty. Grace Tan, because personal data was exposed. The DPO starts a breach assessment to decide whether the National Privacy Commission (NPC) must be notified within 72 hours.' },
+        { t: '15:10', ch: 'Your action', from: 'Email security gateway',
+          body: 'You block the sender and the fake page’s web address, and send a phishing warning to all staff.' }
+      ],
+      facts: [
+        { w: 'When', label: 'Date of the incident', any: ['{date}'] },
+        { w: 'When', label: 'Time the link was clicked (13:52)', any: [T('13:52')] },
+        { w: 'Who', label: 'Affected user: Jose Garcia (Sales)', any: ['garcia'] },
+        { w: 'What', label: 'Phishing email subject', any: ['mailbox is full'], hint: 'The subject line helps others recognise the same email.' },
+        { w: 'When', label: 'Attacker signed in at 13:58', any: [T('13:58')] },
+        { w: 'Where', label: 'Attacker IP address 203.0.113.45', any: ['203.0.113.45'], hint: 'IP addresses are evidence. Copy them exactly.' },
+        { w: 'How', label: 'Password reset and sessions revoked', any: ['reset'] },
+        { w: 'How', label: 'MFA turned on', any: ['mfa', 'multi-factor', 'multifactor'] },
+        { w: 'What', label: 'Forwarding rule to an outside address', any: ['forward'] },
+        { w: 'What', label: '42 emails forwarded', any: [/\b42\b/] },
+        { w: 'What', label: 'Personal data exposed (customer names and mobile numbers)', check: (d, text) => d.fields.personalData === 'Yes' && text.includes('customer'), hint: 'Set “Personal data affected?” to Yes and describe the customer list.' },
+        { w: 'Who', label: 'DPO informed (14:50)', check: (d, text) => /\bdpo\b|data protection|\btan\b/.test(text) && T('14:50').test(text) },
+        { w: 'Why', label: 'Possible NPC notification within 72 hours', any: ['72', 'npc', 'national privacy'] },
+        { w: 'What', label: 'Severity High or Critical', check: (d) => ['High', 'Critical'].includes(d.fields.severity), hint: 'A compromised account with leaked personal data is at least High.' }
+      ],
+      model: {
+        title: 'Compromised email account jgarcia after phishing; mail forwarded outside', occurred: '{date} 13:52', reporter: 'Email security gateway alert; confirmed by Jose Garcia (Sales)',
+        contact: 'Jose Garcia, local 3310', location: 'Sales Department', affected: 'Microsoft 365 account jgarcia (Jose Garcia)', category: 'Security', severity: 'High',
+        impact: 'An attacker accessed the mailbox and forwarded 42 emails to an outside address, including a customer list.',
+        description: 'At 13:52 Jose clicked a link in a phishing email (“Your mailbox is full – verify now”) and entered his password on a fake Microsoft 365 page. The attacker signed in at 13:58 from 203.0.113.45 and created a forwarding rule at 14:01.',
+        dataInvolved: '42 forwarded emails, including a customer list with names and mobile numbers.', personalData: 'Yes',
+        cause: 'User entered his password on a phishing page. The account did not have MFA.',
+        resolution: 'Password reset, sessions revoked, MFA on, forwarding rule deleted, sender and phishing URL blocked.',
+        notified: 'IT Manager Engr. Paolo Dizon and DPO Atty. Grace Tan at 14:50. DPO assessing whether the NPC must be notified within 72 hours.',
+        resolved: '{date} 15:10', status: 'In progress',
+        followup: 'DPO to complete the breach assessment and NPC decision within 72 hours. Notify affected customers if required. Phishing training for Sales. Require MFA for all accounts.',
+        timeline: [
+          ['14:05', 'Gateway alert: jgarcia clicked a phishing link at 13:52 (“Your mailbox is full – verify now”).'],
+          ['14:08', 'Jose Garcia confirmed he entered his password on the fake page.'],
+          ['14:12', 'Sign-in logs: successful sign-in at 13:58 from 203.0.113.45 (foreign country).'],
+          ['14:15', 'Reset password, revoked all sessions, turned on MFA.'],
+          ['14:30', 'Found forwarding rule (created 14:01) to invoice.dept@example.net and deleted it. 42 emails forwarded, including a customer list.'],
+          ['14:50', 'Reported to IT Manager and DPO (personal data exposed).'],
+          ['15:10', 'Blocked sender and phishing URL; warned all staff.']
+        ]
+      }
+    },
+    {
+      id: 'server-room', template: 'incident', level: 'Medium', minutes: 12,
+      title: 'Server room is overheating',
+      summary: 'A late-night temperature alarm. One air-conditioning unit has stopped.',
+      role: 'You are the on-call system administrator tonight. Record the incident from the first alert until things are back to normal.',
+      events: [
+        { t: '22:10', ch: 'Monitoring alert', from: 'Environment sensor ENV-01',
+          body: 'ALERT: Server room temperature 32 °C (threshold 27 °C).' },
+        { t: '22:28', ch: 'Your investigation', from: 'Server room, ground floor, Main Building',
+          body: 'You arrive on site. Air-conditioning unit AC-2 is off; AC-1 is running. The wall thermometer reads 33 °C.' },
+        { t: '22:35', ch: 'Your action', from: 'Server room',
+          body: 'To reduce heat, you shut down the non-critical test servers TEST-01 and TEST-02. All production servers stay online.' },
+        { t: '22:40', ch: 'Phone call', from: 'You → Arnel Bautista · Facilities on-call',
+          body: 'You call the facilities technician on duty, Arnel Bautista (mobile 0917 000 1234). He will arrive in about 15 minutes.' },
+        { t: '22:55', ch: 'Message', from: 'Arnel Bautista · Facilities',
+          body: '“Found a tripped circuit breaker for AC-2. Reset it and the unit is cooling again. I’ll inspect the breaker tomorrow morning.”' },
+        { t: '23:30', ch: 'Monitoring alert', from: 'Environment sensor ENV-01',
+          body: 'Temperature 24 °C. Alert cleared. No production service was interrupted. You leave TEST-01 and TEST-02 off until morning.' }
+      ],
+      facts: [
+        { w: 'When', label: 'Date of the incident', any: ['{date}'] },
+        { w: 'When', label: 'Alert received at 22:10', any: [T('22:10')] },
+        { w: 'What', label: 'Temperature reading and threshold (32 °C / 27 °C)', all: ['32', '27'] },
+        { w: 'Where', label: 'Location: server room, Main Building', any: ['server room'] },
+        { w: 'What', label: 'AC-2 not running', any: ['ac-2', 'ac2', 'ac 2'] },
+        { w: 'How', label: 'TEST-01 and TEST-02 shut down at 22:35', check: (d, text) => /test-?0?1/.test(text) && T('22:35').test(text) },
+        { w: 'Who', label: 'Facilities technician: Arnel Bautista', any: ['bautista'] },
+        { w: 'Why', label: 'Cause: tripped circuit breaker', any: ['breaker'] },
+        { w: 'When', label: 'Back to normal at 23:30 (24 °C)', any: [T('23:30')] },
+        { w: 'What', label: 'Impact: no production service interrupted', any: ['production'] },
+        { w: 'How', label: 'Follow-up: restart test servers, inspect breaker', check: (d) => has(d, 'followup') }
+      ],
+      model: {
+        title: 'Server room overheating: AC-2 stopped (tripped breaker)', occurred: '{date} 22:10', reporter: 'Environment sensor ENV-01 (monitoring alert)',
+        contact: 'Facilities on-call: Arnel Bautista, 0917 000 1234', location: 'Server room, ground floor, Main Building',
+        affected: 'Server room cooling unit AC-2; test servers TEST-01 and TEST-02', category: 'Environment / Facilities', severity: 'High',
+        impact: 'Room reached 33 °C, risking hardware damage. No production service interrupted. TEST-01 and TEST-02 shut down.',
+        description: 'Alert: server room temperature 32 °C (threshold 27 °C). On arrival AC-2 was off, AC-1 running, room at 33 °C.',
+        cause: 'A tripped circuit breaker stopped AC-2.', resolution: 'Facilities reset the breaker; AC-2 cooling again; temperature back to 24 °C.',
+        resolved: '{date} 23:30', status: 'Resolved',
+        followup: 'Power on TEST-01 and TEST-02 in the morning. Facilities to inspect the AC-2 breaker. Check whether AC-1 alone can cool the room.',
+        timeline: [
+          ['22:10', 'Alert from ENV-01: 32 °C (threshold 27 °C).'],
+          ['22:28', 'On site: AC-2 off, AC-1 running, room 33 °C.'],
+          ['22:35', 'Shut down non-critical test servers TEST-01 and TEST-02.'],
+          ['22:40', 'Called Facilities on-call, Arnel Bautista.'],
+          ['22:55', 'Arnel reset the tripped breaker for AC-2; cooling resumed.'],
+          ['23:30', 'Temperature 24 °C; alert cleared.']
+        ]
+      }
+    },
+    {
+      id: 'stolen-laptop', template: 'security', level: 'Medium', minutes: 12,
+      title: 'Company laptop stolen',
+      summary: 'An employee’s laptop was stolen from her car, and she was still signed in to email.',
+      role: 'You are a system administrator at Example Corp. Record the incident and every step you take to protect company data.',
+      events: [
+        { t: '07:55', ch: 'Phone call', from: 'Ana Lim · Marketing · mobile 0918 000 4567',
+          body: '“Good morning. My company laptop was stolen from my car last night at around 9 PM, in a parking lot in Makati. I’ve reported it to the police. I was still signed in to my email on it.”' },
+        { t: '08:02', ch: 'Your investigation', from: 'Asset inventory and device management',
+          body: 'The inventory shows laptop LT-0457 (Dell Latitude 5440, serial number 7H2KQ93) assigned to Ana Lim. BitLocker disk encryption is ON. The laptop last checked in yesterday at 20:47.' },
+        { t: '08:05', ch: 'Your action', from: 'Device management',
+          body: 'You sign Ana out of all sessions, reset her password, and send a remote lock and wipe command to LT-0457.' },
+        { t: '08:20', ch: 'Email', from: 'Ana Lim',
+          body: 'Ana sends a copy of the police blotter, entry no. 2026-1187.' },
+        { t: '08:30', ch: 'Your action', from: 'Notification',
+          body: 'You inform the Data Protection Officer, Atty. Grace Tan. Because the disk is encrypted, the DPO assesses the risk to personal data as low and records the assessment.' },
+        { t: '09:15', ch: 'Your action', from: 'Asset inventory',
+          body: 'You issue loaner laptop LT-0512 to Ana and update the asset inventory: LT-0457 status changed to “Stolen”.' }
+      ],
+      facts: [
+        { w: 'When', label: 'Date reported', any: ['{date}'] },
+        { w: 'When', label: 'Time reported (07:55)', any: [T('07:55')] },
+        { w: 'Who', label: 'Reported by Ana Lim (Marketing)', any: [/\blim\b/] },
+        { w: 'When', label: 'Time of theft: about 21:00 last night', any: [T('21:00'), '9 pm', '9pm', '9:00 pm'] },
+        { w: 'Where', label: 'Location: parking lot in Makati', any: ['makati'] },
+        { w: 'What', label: 'Asset tag LT-0457', any: ['lt-0457'] },
+        { w: 'What', label: 'Serial number 7H2KQ93', any: ['7h2kq93'], hint: 'Police and insurers ask for the serial number.' },
+        { w: 'Why', label: 'Disk encryption (BitLocker) was on', any: ['bitlocker', 'encrypt'], hint: 'Encryption is why the data risk is low. Write it down.' },
+        { w: 'How', label: 'Password reset and remote wipe', all: ['reset', 'wipe'] },
+        { w: 'What', label: 'Police blotter entry 2026-1187', any: ['1187'] },
+        { w: 'Who', label: 'DPO informed', any: [/\bdpo\b|data protection|\btan\b/] },
+        { w: 'How', label: 'Loaner LT-0512 issued', any: ['lt-0512'] },
+        { w: 'How', label: 'Asset inventory updated', any: ['inventory'] }
+      ],
+      model: {
+        title: 'Stolen company laptop LT-0457 (Ana Lim)', occurred: '{date} 07:55', reporter: 'Ana Lim, Marketing', contact: 'Mobile 0918 000 4567',
+        location: 'Stolen from a car in a parking lot in Makati, about 21:00 on {date-1}', affected: 'Laptop LT-0457, Dell Latitude 5440, S/N 7H2KQ93; Ana Lim’s user account',
+        category: 'Security', severity: 'Medium', impact: 'User without a laptop. Possible access to her open email session on the stolen device.',
+        description: 'Laptop stolen from Ana’s car at about 21:00 on {date-1} in Makati. She was still signed in to email. Police report filed.',
+        dataInvolved: 'Work files and email stored on the laptop. Disk encrypted with BitLocker.', personalData: 'Yes',
+        cause: 'Theft of the device from a parked car.', resolution: 'Account secured, device locked and wiped remotely, loaner issued, inventory updated.',
+        notified: 'DPO Atty. Grace Tan at 08:30. Risk assessed as low because the disk is encrypted.', resolved: '{date} 09:15', status: 'Resolved',
+        followup: 'Confirm the wipe completes if the laptop comes online. Arrange a permanent replacement. Remind staff not to leave laptops in cars.',
+        timeline: [
+          ['07:55', 'Ana Lim reported her laptop stolen (about 21:00 yesterday, Makati).'],
+          ['08:02', 'Inventory: LT-0457, Dell Latitude 5440, S/N 7H2KQ93. BitLocker ON. Last check-in 20:47 yesterday.'],
+          ['08:05', 'Signed out all sessions, reset password, sent remote lock and wipe.'],
+          ['08:20', 'Received police blotter entry no. 2026-1187.'],
+          ['08:30', 'Informed DPO; risk assessed as low (disk encrypted).'],
+          ['09:15', 'Issued loaner LT-0512; inventory updated: LT-0457 = Stolen.']
+        ]
+      }
+    },
+    {
+      id: 'backup-failed', template: 'maintenance', level: 'Easy', minutes: 10,
+      title: 'Nightly backup failed',
+      summary: 'The morning backup check shows last night’s database backup did not run.',
+      role: 'You are doing the daily morning checks as system administrator. Log what you find and what you do about it.',
+      events: [
+        { t: '07:30', ch: 'Daily check', from: 'Backup report',
+          body: 'The nightly job DB01-Nightly FAILED at 01:47 with the error: “Insufficient disk space on target \\\\BKP01\\Backups”.' },
+        { t: '07:40', ch: 'Your investigation', from: 'Backup server BKP01',
+          body: 'Volume E: has only 3 GB free out of 2 TB. The cleanup job that deletes backups older than 14 days has been disabled since {date-8}. It was paused for a storage migration and never turned back on.' },
+        { t: '07:55', ch: 'Your action', from: 'Backup server BKP01',
+          body: 'You re-enable the cleanup job and run it manually. It deletes 21 old backup sets. Free space is now 820 GB.' },
+        { t: '08:10', ch: 'Your action', from: 'Backup software',
+          body: 'You start DB01-Nightly manually.' },
+        { t: '08:52', ch: 'Monitoring alert', from: 'Backup software',
+          body: 'DB01-Nightly completed successfully (186 GB). Verification passed.' },
+        { t: '09:00', ch: 'Note', from: 'You',
+          body: 'Database changes from yesterday evening were unprotected for about 7 hours. No data was lost, because the database server ran normally the whole time.' }
+      ],
+      facts: [
+        { w: 'When', label: 'Date detected', any: ['{date}'] },
+        { w: 'When', label: 'Time detected (07:30)', any: [T('07:30')] },
+        { w: 'What', label: 'Backup job name: DB01-Nightly', any: ['db01'] },
+        { w: 'When', label: 'Time of failure (01:47)', any: [T('01:47')] },
+        { w: 'What', label: 'Exact error message (insufficient disk space)', any: ['insufficient', 'disk space'] },
+        { w: 'Where', label: 'Backup server BKP01', any: ['bkp01', 'bkp-01'] },
+        { w: 'Why', label: 'Cause: cleanup job disabled after migration', any: ['cleanup', 'clean-up', 'clean up'] },
+        { w: 'How', label: 'Cleanup re-enabled and run (820 GB free)', any: ['820', 're-enable', 'reenable', 'enabled'] },
+        { w: 'When', label: 'Backup re-run at 08:10', any: [T('08:10')] },
+        { w: 'When', label: 'Completed and verified at 08:52', any: [T('08:52')] },
+        { w: 'What', label: 'Impact: about 7 hours unprotected, no data lost', any: ['7 hours', 'seven hours', 'no data'] },
+        { w: 'How', label: 'Follow-up to prevent a repeat', check: (d) => has(d, 'followup') }
+      ],
+      model: {
+        title: 'Nightly backup DB01-Nightly failed: backup target full', occurred: '{date} 07:30', reporter: 'Morning backup check (system administrator)',
+        location: 'Server room / backup infrastructure', affected: 'Backup job DB01-Nightly; backup server BKP01 (volume E:)', category: 'Backup / Storage', severity: 'Medium',
+        description: 'DB01-Nightly failed at 01:47: “Insufficient disk space on target \\\\BKP01\\Backups”. BKP01 E: had 3 GB free of 2 TB.',
+        cause: 'The cleanup job was disabled during a storage migration on {date-8} and never re-enabled, so old backups filled the disk.',
+        resolution: 'Cleanup job re-enabled and run (820 GB free). Backup re-run and verified.', resolved: '{date} 08:52', status: 'Resolved',
+        followup: 'Add a disk-space alert on BKP01 at 80%. Add “re-enable paused jobs” to the migration checklist.',
+        timeline: [
+          ['07:30', 'Backup report: DB01-Nightly failed at 01:47 (insufficient disk space on \\\\BKP01\\Backups).'],
+          ['07:40', 'BKP01 E: 3 GB free of 2 TB. Cleanup job disabled since {date-8} (storage migration).'],
+          ['07:55', 'Re-enabled and ran cleanup job: 21 old sets deleted, 820 GB free.'],
+          ['08:10', 'Started DB01-Nightly manually.'],
+          ['08:52', 'Backup completed (186 GB); verification passed.'],
+          ['09:00', 'Impact: about 7 hours of changes unprotected; no data lost.']
+        ]
+      }
+    }
+  ];
+  const scenarioById = (id) => SCENARIOS.find((s) => s.id === id);
+
+  /* ---------------------------------------------------------------- storage */
+  // Records live in this viewer's private store when the page runs as a Claude
+  // artifact, and in the browser's localStorage everywhere else (GitHub Pages, a file).
+  const store = {
+    mode: 'local', ready: false, records: [], col: null,
+    loadLocal() { try { return JSON.parse(LS.get(KEY_RECORDS) || '[]'); } catch (e) { return []; } },
+    saveLocal() { LS.set(KEY_RECORDS, JSON.stringify(this.records)); },
+    async init() {
+      const host = window.claude && typeof window.claude.use === 'function';
+      if (!host) { this.useLocal(); return; }
+      try {
+        const res = await Promise.all([window.claude.use('db'), window.claude.use('user')]);
+        const db = res[0], user = res[1];
+        const uid = user ? await user.id() : null;
+        if (db && uid) {
+          this.col = db.collection('data/users/' + uid);
+          this.mode = 'cloud';
+          this.col.onSnapshot((snap) => {
+            this.records = snap.docs.map((d) => clone(d.data()));
+            this.ready = true;
+            changed();
+          }, () => this.useLocal());
+          return;
+        }
+      } catch (e) { /* fall through to local */ }
+      this.useLocal();
+    },
+    useLocal() { this.mode = 'local'; this.col = null; this.records = this.loadLocal(); this.ready = true; changed(); },
+    upsert(rec) { const i = this.records.findIndex((r) => r.id === rec.id); if (i >= 0) this.records[i] = rec; else this.records.push(rec); },
+    async save(rec) {
+      const body = clone(rec);
+      if (this.mode === 'cloud') {
+        try { await this.col.doc(rec.id).set(body); this.upsert(body); return; } catch (e) {
+          if (e && e.code === 'unavailable') {
+            try { await sleep(400 + Math.random() * 600); await this.col.doc(rec.id).set(body); this.upsert(body); return; } catch (e2) { /* fall back */ }
+          }
+          if (e && e.code === 'quota_exceeded') { toast('Storage is full. Delete some old records, then save again.'); throw e; }
+          this.useLocal();
+          toast('Could not save to your account, so this record is saved in this browser.');
+        }
+      }
+      this.upsert(body);
+      this.saveLocal();
+    },
+    async remove(id) {
+      if (this.mode === 'cloud') {
+        await this.col.doc(id).delete();
+        this.records = this.records.filter((r) => r.id !== id);
+        return;
+      }
+      this.records = this.records.filter((r) => r.id !== id);
+      this.saveLocal();
+    }
+  };
+
+  function nextId(prefix) {
+    const year = new Date().getFullYear();
+    const head = prefix + '-' + year + '-';
+    const max = store.records.reduce((m, r) => r.id && r.id.indexOf(head) === 0 ? Math.max(m, parseInt(r.id.slice(head.length), 10) || 0) : m, 0);
+    return head + String(max + 1).padStart(4, '0');
+  }
+
+  /* ------------------------------------------------------------------ draft */
+  let draft = null;
+  let draftTimer = null;
+  function loadDraft() { try { draft = JSON.parse(LS.get(KEY_DRAFT) || 'null'); } catch (e) { draft = null; } }
+  function persistDraft() { if (draft) LS.set(KEY_DRAFT, JSON.stringify(draft)); }
+  function saveDraftSoon() {
+    clearTimeout(draftTimer);
+    draftTimer = setTimeout(() => {
+      persistDraft();
+      const el = $('#draft-status');
+      if (el) el.textContent = 'Draft saved ' + new Date().toTimeString().slice(0, 8);
+    }, 400);
+  }
+  function clearDraft() { clearTimeout(draftTimer); draft = null; LS.del(KEY_DRAFT); }
+
+  function newDraft(opts) {
+    const today = ymd(new Date());
+    const sc = opts.scenarioId ? scenarioById(opts.scenarioId) : null;
+    return {
+      mode: opts.mode, scenarioId: sc ? sc.id : null, template: sc ? sc.template : opts.template,
+      scenarioDate: sc ? today : null, revealed: sc ? 1 : 0,
+      fields: {}, timeline: sc ? [{ t: '', a: '' }] : [{ t: hm(new Date()), a: '' }],
+      author: LS.get(KEY_AUTHOR) || '', changeNote: '', editingId: null, startedAt: new Date().toISOString()
+    };
+  }
+
+  /* ----------------------------------------------------------------- checks */
+  const recordText = (d) => [].concat(Object.values(d.fields || {}), (d.timeline || []).map((e) => (e.t || '') + ' ' + (e.a || ''))).join('\n').toLowerCase();
+  function factOk(f, d, text) {
+    if (f.check) return !!f.check(d, text);
+    const test = (p) => p instanceof RegExp ? p.test(text) : text.indexOf(String(fill(p, d.scenarioDate)).toLowerCase()) !== -1;
+    const all = f.all || [], any = f.any || [];
+    return all.every(test) && (any.length === 0 || any.some(test));
+  }
+  function requiredMissing(d) {
+    const missing = [];
+    if (!String(d.author || '').trim()) missing.push('Documented by');
+    TEMPLATES[d.template].fields.forEach((k) => { if (FIELDS[k].req && !has(d, k)) missing.push(labelFor(d.template, k)); });
+    return missing;
+  }
+  function evaluate(d) {
+    const sc = scenarioById(d.scenarioId);
+    const tpl = TEMPLATES[d.template];
+    const f = d.fields || {};
+    const text = recordText(d);
+    const facts = sc ? sc.facts.map((x) => ({ w: x.w, label: fill(x.label, d.scenarioDate), hint: x.hint ? fill(x.hint, d.scenarioDate) : '', ok: factOk(x, d, text) })) : [];
+    const found = facts.filter((x) => x.ok).length;
+    const checks = [];
+    const ok = (t) => checks.push({ lvl: 'ok', text: t });
+    const bad = (t) => checks.push({ lvl: 'bad', text: t });
+    const warn = (t) => checks.push({ lvl: 'warn', text: t });
+    const missing = requiredMissing(d);
+    if (missing.length) bad('Required fields are empty: ' + missing.join(', ') + '.'); else ok('All required fields are filled in.');
+    const tl = (d.timeline || []).filter((e) => (e.t || '').trim() || (e.a || '').trim());
+    const minTl = sc ? Math.min(4, sc.events.length) : 1;
+    if (tl.length >= minTl) ok('The timeline has ' + tl.length + (tl.length === 1 ? ' entry.' : ' entries.'));
+    else bad('The timeline has ' + tl.length + (tl.length === 1 ? ' entry' : ' entries') + '. Record each update and action as its own entry (at least ' + minTl + ').');
+    const noTime = tl.filter((e) => !(e.t || '').trim()).length;
+    if (tl.length) { if (noTime) bad(noTime + (noTime === 1 ? ' timeline entry has' : ' timeline entries have') + ' no time.'); else ok('Every timeline entry has a time.'); }
+    const noText = tl.filter((e) => !(e.a || '').trim()).length;
+    if (noText) bad(noText + (noText === 1 ? ' timeline entry has' : ' timeline entries have') + ' a time but no description.');
+    const times = tl.map((e) => e.t).filter(Boolean);
+    if (times.length > 1) { if (times.every((t, i) => i === 0 || t >= times[i - 1])) ok('Timeline entries are in time order.'); else warn('Timeline entries are not in time order.'); }
+    const dtBad = ['occurred', 'resolved'].filter((k) => f[k] && !/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/.test(String(f[k]).replace('T', ' ')));
+    const tBad = tl.filter((e) => e.t && !/^\d{2}:\d{2}$/.test(e.t)).length;
+    if (dtBad.length || tBad) warn('Some dates or times are not in the standard format. Use YYYY-MM-DD HH:MM with 24-hour time.');
+    else if (f.occurred || times.length) ok('Dates and times use the standard format (YYYY-MM-DD, 24-hour).');
+    if (f.occurred && f.resolved) { if (f.resolved >= f.occurred) ok('The resolved time is after the reported time.'); else bad('The resolved time is before the reported time.'); }
+    if (['Resolved', 'Closed'].includes(f.status) && tpl.fields.includes('resolved') && !f.resolved) warn('Status is ' + f.status + ', but no resolved date and time is recorded.');
+    if (f.status === 'Open' && f.resolved) warn('A resolved time is recorded, but the status is still Open.');
+    if (tpl.fields.includes('cause') && !String(f.cause || '').trim()) warn('Cause is empty. If it is unknown, write “Unknown, under investigation”.');
+    if (/\b(password|passwd|pwd)\s*(is|:|=)\s*\S+/i.test(text)) bad('It looks like a password was written down. Never record passwords in documentation.');
+    return { facts, found, total: facts.length, checks, unrevealed: sc ? sc.events.length - d.revealed : 0 };
+  }
+  const verdict = (pct) => pct >= 90 ? 'Excellent record' : pct >= 70 ? 'Good, with a few details missing' : pct >= 50 ? 'Needs more detail' : 'Important facts are missing';
+
+  function modelRecord(sc, date) {
+    const fields = {};
+    Object.keys(sc.model).forEach((k) => { if (k !== 'timeline') fields[k] = fill(sc.model[k], date); });
+    return { id: 'Example', template: sc.template, fields, timeline: sc.model.timeline.map((e) => ({ t: e[0], a: fill(e[1], date) })), author: 'Example answer', scenarioId: sc.id, scenarioDate: date };
+  }
+
+  /* -------------------------------------------------------------- rendering */
+  const app = $('#app');
+  const state = { view: 'scenarios', recordId: null, review: null, showExample: false, pendingStart: null, confirmDelete: false, filters: { q: '', type: '', status: '' } };
+
+  const sevChip = (v) => v ? '<span class="chip sev-' + slug(v) + '">' + esc(v) + '</span>' : '';
+  const stChip = (v) => v ? '<span class="chip st-' + slug(v) + '">' + esc(v) + '</span>' : '';
+
+  function render() {
+    $$('.tabs a').forEach((a) => {
+      const tab = a.dataset.tab;
+      const on = tab === state.view || (tab === 'records' && state.view === 'record') || (tab === 'scenarios' && state.view === 'practice');
+      if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
+    });
+    $('#rec-count').textContent = store.ready ? String(store.records.length) : '…';
+    if (state.view === 'practice' && draft) app.innerHTML = practiceView();
+    else if (state.view === 'records') app.innerHTML = recordsView();
+    else if (state.view === 'record') app.innerHTML = recordView();
+    else if (state.view === 'guide') app.innerHTML = guideView();
+    else app.innerHTML = scenariosView();
+  }
+
+  function changed() {
+    $('#rec-count').textContent = String(store.records.length);
+    if (state.view === 'records') {
+      const rows = $('#rec-rows');
+      if (!rows) { render(); return; }
+      rows.innerHTML = recordRows();
+      renderStoreMode();
+      const ex = $('[data-action="export-all"]'); if (ex) ex.disabled = !store.records.length;
+    }
+    else if (state.view === 'record' || state.view === 'scenarios') render();
+  }
+
+  /* Scenarios */
+  function bestCheck(scId) {
+    const done = store.records.filter((r) => r.scenarioId === scId && r.check && !r.example);
+    if (!done.length) return null;
+    return done.reduce((b, r) => (r.check.found / r.check.total) > (b.found / b.total) ? r.check : b, done[0].check);
+  }
+  function scenariosView() {
+    const sc = draft && draft.scenarioId ? scenarioById(draft.scenarioId) : null;
+    const draftName = draft ? (draft.mode === 'edit' ? 'your edit of ' + draft.editingId : sc ? 'the scenario “' + sc.title + '”' : 'a blank ' + TEMPLATES[draft.template].label) : '';
+    let banner = '';
+    if (draft && state.pendingStart) {
+      banner = '<div class="banner" role="alert"><p>Starting a new record will discard your unsaved work on ' + esc(draftName) + '.</p>' +
+        '<div class="btn-row"><button class="btn btn-primary btn-sm" data-action="confirm-start">Discard and start</button><button class="btn btn-sm" data-action="resume">Keep working on it</button><button class="btn btn-ghost btn-sm" data-action="cancel-start">Cancel</button></div></div>';
+    } else if (draft) {
+      banner = '<div class="banner"><p>You have unsaved documentation for ' + esc(draftName) + '.</p><div class="btn-row"><button class="btn btn-primary btn-sm" data-action="resume">Resume</button></div></div>';
+    }
+    const cards = SCENARIOS.map((s) => {
+      const t = TEMPLATES[s.template];
+      const best = store.ready ? bestCheck(s.id) : null;
+      return '<article class="card">' +
+        '<div class="card-top"><span class="chip chip-code" title="' + esc(t.label) + '">' + t.prefix + '</span><span class="chip">' + esc(s.level) + '</span><span class="muted">' + s.events.length + ' updates · about ' + s.minutes + ' min</span></div>' +
+        '<h3>' + esc(s.title) + '</h3><p>' + esc(s.summary) + '</p>' +
+        '<p class="muted" style="font-size:13px">Document as: <strong>' + esc(t.label) + '</strong></p>' +
+        '<div class="card-foot">' + (best ? '<span class="done" title="Your best documentation check">' + ICON.check + 'Done · ' + best.found + '/' + best.total + '</span>' : '') +
+        '<span class="spacer"></span><button class="btn btn-primary btn-sm" data-action="start" data-id="' + s.id + '">' + (best ? 'Try again' : 'Start scenario') + '</button></div>' +
+        '</article>';
+    }).join('');
+    const blanks = Object.keys(TEMPLATES).map((k) => '<button class="btn btn-sm" data-action="blank" data-template="' + k + '">' + esc(TEMPLATES[k].label) + '</button>').join('');
+    return '<section class="intro"><div><p class="eyebrow">Documentation practice for system administrators</p><h1>Read the situation. Write it down properly.</h1>' +
+      '<p class="lead">Pick a scenario. Updates arrive one at a time, each with its own time stamp. Document them the way a system administrator should, then check your record against the facts that matter.</p></div>' +
+      '<ol class="steps"><li><span><b>Read</b> each update as the situation unfolds.</span></li><li><span><b>Document</b> the date, time, who, what, where, why and how.</span></li><li><span><b>Check</b> what you captured, compare with an example, and save the record.</span></li></ol></section>' +
+      banner +
+      '<div class="section-head"><h2>Scenarios</h2><span class="muted">' + SCENARIOS.length + ' situations from a system administrator’s day</span></div>' +
+      '<div class="grid">' + cards + '</div>' +
+      '<section class="blank"><div><h2>Document a real event</h2><p>Start a blank record from a template. The <strong>Now</strong> buttons stamp the current date and time.</p></div><div class="btn-row">' + blanks + '</div></section>';
+  }
+
+  /* Practice */
+  function practiceView() {
+    const sc = scenarioById(draft.scenarioId);
+    const tpl = TEMPLATES[draft.template];
+    const heading = draft.mode === 'edit' ? 'Editing ' + draft.editingId : sc ? sc.title : 'New ' + tpl.label;
+    const idInfo = draft.mode === 'edit' ? 'Record ID <b>' + esc(draft.editingId) + '</b>' : 'Record ID <b>' + esc(nextId(tpl.prefix)) + '</b> · assigned on save';
+    const right = state.review ? reviewHTML() : formHTML();
+    return '<div class="practice-head"><div><p class="eyebrow">' + esc(tpl.label) + (sc ? ' · Scenario' : '') + '</p><h1>' + esc(heading) + '</h1></div><span class="spacer"></span><span class="id-preview">' + idInfo + '</span></div>' +
+      '<div class="workbench' + (sc ? '' : ' single') + '">' + (sc ? '<aside class="feed-pane pane" id="feed-pane" aria-label="Scenario">' + feedHTML(sc) + '</aside>' : '') +
+      '<section class="stack" id="form-pane">' + right + '</section></div>';
+  }
+
+  function feedHTML(sc, fresh) {
+    const shown = sc.events.slice(0, draft.revealed);
+    const rest = sc.events.length - draft.revealed;
+    const items = shown.map((e, i) => '<li class="event' + (fresh && i === shown.length - 1 ? ' fresh' : '') + '"><div class="event-time">' + esc(e.t) + '</div><div><div class="event-ch">' + esc(e.ch) + '</div><div class="event-from">' + esc(fill(e.from, draft.scenarioDate)) + '</div><div class="event-body">' + esc(fill(e.body, draft.scenarioDate)) + '</div></div></li>').join('');
+    const more = rest > 0
+      ? '<div class="feed-more"><button class="btn btn-primary btn-sm" data-action="reveal">Show next update</button><span class="muted">' + rest + ' more</span><span class="spacer"></span><button class="btn btn-ghost btn-sm" data-action="reveal-all">Show all</button></div>'
+      : '<p class="feed-end">That’s the whole scenario. Finish your record, then check it.</p>';
+    return '<div class="feed-head"><span class="eyebrow">Situation</span><span class="sim-date">' + esc(dayName(draft.scenarioDate)) + ', ' + esc(draft.scenarioDate) + ' · ' + esc(tzLabel) + '</span></div>' +
+      '<p class="role">' + esc(sc.role) + '</p><ol class="feed" aria-live="polite">' + items + '</ol>' + more;
+  }
+
+  function fieldHTML(key) {
+    const f = FIELDS[key];
+    const label = labelFor(draft.template, key);
+    if (f.type === 'timeline') return timelineFieldHTML(label);
+    const v = draft.fields[key] || '';
+    const id = 'f-' + key;
+    const wide = f.type === 'textarea' || f.wide ? ' wide' : '';
+    const req = f.req ? ' <span class="req" aria-hidden="true">*</span>' : '';
+    let help = f.help || '';
+    if (f.type === 'datetime') help = (draft.scenarioId ? 'Use the date and time from the scenario. ' : '') + 'Format: YYYY-MM-DD HH:MM, 24-hour.';
+    let ctl;
+    if (f.type === 'textarea') ctl = '<textarea id="' + id + '" data-field="' + key + '" rows="' + (f.rows || 3) + '" placeholder="' + esc(f.ph || '') + '"' + (f.req ? ' aria-required="true"' : '') + '>' + esc(v) + '</textarea>';
+    else if (f.type === 'select') ctl = '<select id="' + id + '" data-field="' + key + '"' + (f.req ? ' aria-required="true"' : '') + '><option value="">Select…</option>' + f.options.map((o) => '<option' + (o === v ? ' selected' : '') + '>' + esc(o) + '</option>').join('') + '</select>';
+    else if (f.type === 'datetime') ctl = '<div class="input-row"><input id="' + id + '" class="dt" type="text" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="20" placeholder="YYYY-MM-DD HH:MM" data-field="' + key + '" data-kind="datetime" value="' + esc(v) + '"' + (f.req ? ' aria-required="true"' : '') + '><button type="button" class="btn btn-sm" data-action="now-field" data-field="' + key + '" title="Fill in the current date and time">Now</button></div>';
+    else ctl = '<input id="' + id + '" type="text" data-field="' + key + '" value="' + esc(v) + '" placeholder="' + esc(f.ph || '') + '"' + (f.req ? ' aria-required="true"' : '') + '>';
+    return '<div class="field' + wide + '" data-key="' + key + '"><label for="' + id + '">' + esc(label) + req + '</label>' + ctl + (help ? '<p class="help">' + esc(help) + '</p>' : '') + '</div>';
+  }
+
+  function timelineRowsHTML() {
+    if (!draft.timeline.length) return '<p class="empty-tl">No entries yet. Add one entry for each update and each action you take.</p>';
+    return '<ol class="tl-list">' + draft.timeline.map((e, i) =>
+      '<li class="tl-row"><div class="tl-time"><input type="text" class="dt" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="9" placeholder="HH:MM" id="tl-t-' + i + '" data-tl="t" data-i="' + i + '" value="' + esc(e.t) + '" aria-label="Time of entry ' + (i + 1) + ', HH:MM"><button type="button" class="btn btn-sm btn-ghost" data-action="now-entry" data-i="' + i + '" title="Current time">Now</button></div>' +
+      '<textarea id="tl-a-' + i + '" data-tl="a" data-i="' + i + '" rows="2" placeholder="What happened, or what you did" aria-label="Entry ' + (i + 1) + ' description">' + esc(e.a) + '</textarea>' +
+      '<button type="button" class="icon-btn" data-action="remove-entry" data-i="' + i + '" aria-label="Remove entry ' + (i + 1) + '" title="Remove entry">' + ICON.trash + '</button></li>').join('') + '</ol>';
+  }
+  function timelineFieldHTML(label) {
+    return '<div class="field wide" data-key="timeline"><span class="label">' + esc(label) + ' <span class="req" aria-hidden="true">*</span></span>' +
+      '<p class="help" style="margin:0 0 10px">One entry per update or action, in time order. Use 24-hour time (14:05, not 2:05).</p>' +
+      '<div id="tl-rows">' + timelineRowsHTML() + '</div><button type="button" class="btn btn-sm" data-action="add-entry">+ Add entry</button></div>';
+  }
+
+  function formHTML() {
+    const tpl = TEMPLATES[draft.template];
+    const groups = GROUPS.map((g) => {
+      const keys = tpl.fields.filter((k) => FIELDS[k].group === g[0]);
+      if (!keys.length && g[0] !== 'summary') return '';
+      let extra = '';
+      if (g[0] === 'summary') {
+        extra = '<div class="field" data-key="author"><label for="f-author">Documented by <span class="req" aria-hidden="true">*</span></label><input id="f-author" type="text" value="' + esc(draft.author) + '" placeholder="Your name" autocomplete="name" aria-required="true"><p class="help">Every record names the person who wrote it.</p></div>';
+        if (draft.mode === 'edit') extra += '<div class="field"><label for="f-change">Reason for this change</label><input id="f-change" type="text" value="' + esc(draft.changeNote) + '" placeholder="e.g. Added root cause after log review"><p class="help">Saved in the revision history.</p></div>';
+      }
+      return '<div class="form-group"><div class="group-title"><h2>' + esc(g[1]) + '</h2>' + (g[2] ? '<span class="w">' + esc(g[2]) + '</span>' : '') + '</div><div class="fields">' + keys.map(fieldHTML).join('') + extra + '</div></div>';
+    }).join('');
+    const checkBtn = draft.scenarioId ? '<button type="button" class="btn" data-action="check">Check my documentation</button>' : '';
+    return '<form id="docform" class="stack" novalidate>' + groups +
+      '<div class="formbar"><span class="draft-status" id="draft-status">Your draft saves automatically</span><span class="spacer"></span>' +
+      '<button type="button" class="btn btn-ghost" data-action="discard">' + (draft.mode === 'edit' ? 'Cancel edit' : 'Discard') + '</button>' + checkBtn +
+      '<button type="button" class="btn btn-primary" data-action="save">' + (draft.mode === 'edit' ? 'Save changes' : 'Save record') + '</button></div></form>';
+  }
+
+  function reviewHTML() {
+    const ev = state.review;
+    const sc = scenarioById(draft.scenarioId);
+    const pct = ev.total ? Math.round(ev.found / ev.total * 100) : 0;
+    const tiles = W5H.map((w) => {
+      const all = ev.facts.filter((f) => f.w === w);
+      if (!all.length) return '<div class="w-tile"><span>' + w + '</span><b class="muted">–</b></div>';
+      const got = all.filter((f) => f.ok).length;
+      return '<div class="w-tile' + (got === all.length ? ' full' : got === 0 ? ' none' : '') + '"><span>' + w + '</span><b>' + got + '/' + all.length + '</b></div>';
+    }).join('');
+    const mark = (lvl) => '<span class="mark">' + (lvl === 'ok' ? ICON.check : lvl === 'bad' ? ICON.x : ICON.warn) + '</span>';
+    const facts = ev.facts.map((f) => '<li class="lvl-' + (f.ok ? 'ok' : 'bad') + '">' + mark(f.ok ? 'ok' : 'bad') + '<div><span class="fact-w">' + f.w + '</span>' + esc(f.label) + (!f.ok && f.hint ? '<p class="hint">' + esc(f.hint) + '</p>' : '') + '</div></li>').join('');
+    const checks = ev.checks.map((c) => '<li class="lvl-' + c.lvl + '">' + mark(c.lvl) + '<div>' + esc(c.text) + '</div></li>').join('');
+    const unrevealed = ev.unrevealed > 0 ? '<p class="notice">You haven’t read ' + ev.unrevealed + (ev.unrevealed === 1 ? ' update' : ' updates') + ' yet. Facts in unread updates count as missing.</p>' : '';
+    const example = state.showExample ? '<div class="stack"><p class="eyebrow">Example documentation for this scenario</p>' + docHTML(modelRecord(sc, draft.scenarioDate), { example: true }) + '</div>' : '';
+    return '<div class="pane"><p class="eyebrow">Documentation check</p><div class="score"><div class="score-num">' + ev.found + '<span>/' + ev.total + '</span></div><div class="score-text"><strong>' + verdict(pct) + '</strong><p class="muted">key facts captured (' + pct + '%)</p><div class="meter" role="img" aria-label="' + pct + ' percent"><span style="width:' + pct + '%"></span></div></div></div>' +
+      '<div class="w-grid">' + tiles + '</div>' + unrevealed + '</div>' +
+      '<div class="pane"><h3>Key facts</h3><ul class="checklist">' + facts + '</ul><p class="help" style="margin-top:10px">The check looks for names, numbers, times and keywords anywhere in your record. Use it as a guide, not a grade.</p></div>' +
+      '<div class="pane"><h3>Documentation standards</h3><ul class="checklist">' + checks + '</ul></div>' +
+      '<div class="formbar"><button type="button" class="btn" data-action="back">← Back to editing</button><button type="button" class="btn" data-action="toggle-example">' + (state.showExample ? 'Hide example' : 'Show example documentation') + '</button><span class="spacer"></span><button type="button" class="btn btn-primary" data-action="save">Save record</button></div>' +
+      example;
+  }
+
+  /* Document (record view, example answer) */
+  function docHTML(rec, opts) {
+    opts = opts || {};
+    const tpl = TEMPLATES[rec.template];
+    const f = rec.fields || {};
+    const L = (k) => labelFor(rec.template, k);
+    const val = (v) => v ? '<dd>' + nl(v) + '</dd>' : '<dd class="not-recorded">Not recorded</dd>';
+    const meta = [
+      ['Record ID', '<span class="mono">' + esc(rec.id) + '</span>'],
+      ['Status', stChip(f.status) || '<span class="not-recorded">Not set</span>']
+    ];
+    if (tpl.fields.includes('severity')) meta.push(['Severity', sevChip(f.severity) || '<span class="not-recorded">Not set</span>']);
+    meta.push([L('occurred'), '<span class="mono">' + (esc(fmtDT(f.occurred)) || '—') + '</span>']);
+    if (tpl.fields.includes('resolved')) meta.push([L('resolved'), '<span class="mono">' + (esc(fmtDT(f.resolved)) || '—') + '</span>']);
+    meta.push(['Documented by', esc(rec.author || '—')]);
+    if (!opts.example) {
+      meta.push(['Created', '<span class="mono">' + esc(fmtStamp(rec.createdAt)) + '</span>']);
+      meta.push(['Last updated', '<span class="mono">' + esc(fmtStamp(rec.updatedAt)) + '</span>']);
+      meta.push(['Version', '<span class="mono">' + esc(rec.version || 1) + '</span>']);
+    }
+    const skip = ['title', 'status', 'severity', 'occurred', 'resolved'];
+    const sections = GROUPS.filter((g) => g[0] !== 'summary').map((g) => {
+      const keys = tpl.fields.filter((k) => FIELDS[k].group === g[0] && skip.indexOf(k) === -1);
+      if (!keys.length) return '';
+      const body = keys.map((k) => {
+        if (k === 'timeline') {
+          const tl = (rec.timeline || []).filter((e) => e.t || e.a);
+          return tl.length ? '<div class="table-wrap"><table><thead><tr><th>Time</th><th>Action / event</th></tr></thead><tbody>' + tl.map((e) => '<tr><td class="t">' + (esc(e.t) || '—') + '</td><td>' + nl(e.a) + '</td></tr>').join('') + '</tbody></table></div>' : '<p class="not-recorded">No timeline entries</p>';
+        }
+        return '<dl class="kv"><dt>' + esc(L(k)) + '</dt>' + val(f[k]) + '</dl>';
+      }).join('');
+      return '<section class="doc-section"><h3>' + esc(g[1]) + '</h3>' + body + '</section>';
+    }).join('');
+    const revs = !opts.example && rec.revisions && rec.revisions.length
+      ? '<section class="doc-section"><h3>Revision history</h3><div class="table-wrap"><table><thead><tr><th>Version</th><th>Date &amp; time</th><th>By</th><th>Change</th></tr></thead><tbody>' +
+        rec.revisions.map((r) => '<tr><td class="mono">' + esc(r.v) + '</td><td class="mono nowrap">' + esc(fmtStamp(r.at)) + '</td><td>' + esc(r.by) + '</td><td>' + esc(r.note) + '</td></tr>').join('') + '</tbody></table></div></section>'
+      : '';
+    return '<article class="doc"><header class="doc-head"><p class="eyebrow">' + esc(tpl.label) + (rec.example ? ' · <span class="chip chip-example">Example</span>' : '') + '</p><h2>' + (f.title ? esc(f.title) : '<span class="not-recorded">Untitled</span>') + '</h2>' +
+      '<dl class="doc-meta">' + meta.map((m) => '<div><dt>' + esc(m[0]) + '</dt><dd>' + m[1] + '</dd></div>').join('') + '</dl></header>' + sections + revs + '</article>';
+  }
+
+  function toMarkdown(rec) {
+    const tpl = TEMPLATES[rec.template];
+    const f = rec.fields || {};
+    const L = (k) => labelFor(rec.template, k);
+    const lines = ['# ' + rec.id + ': ' + (f.title || 'Untitled'), '', '**' + tpl.label + '**', '', '| Field | Value |', '|---|---|'];
+    const row = (k, v) => lines.push('| ' + k + ' | ' + String(v || '—').replace(/\|/g, '\\|').replace(/\n/g, ' ') + ' |');
+    row('Record ID', rec.id); row('Status', f.status);
+    if (tpl.fields.includes('severity')) row('Severity', f.severity);
+    row(L('occurred'), fmtDT(f.occurred));
+    if (tpl.fields.includes('resolved')) row(L('resolved'), fmtDT(f.resolved));
+    row('Documented by', rec.author); row('Created', fmtStamp(rec.createdAt)); row('Last updated', fmtStamp(rec.updatedAt)); row('Version', rec.version);
+    const skip = ['title', 'status', 'severity', 'occurred', 'resolved'];
+    GROUPS.filter((g) => g[0] !== 'summary').forEach((g) => {
+      const keys = tpl.fields.filter((k) => FIELDS[k].group === g[0] && skip.indexOf(k) === -1);
+      if (!keys.length) return;
+      lines.push('', '## ' + g[1], '');
+      keys.forEach((k) => {
+        if (k === 'timeline') {
+          lines.push('| Time | Action / event |', '|---|---|');
+          (rec.timeline || []).filter((e) => e.t || e.a).forEach((e) => lines.push('| ' + (e.t || '—') + ' | ' + String(e.a || '').replace(/\|/g, '\\|').replace(/\n/g, ' ') + ' |'));
+        } else {
+          lines.push('**' + L(k) + ':** ' + (f[k] || '_Not recorded_'), '');
+        }
+      });
+    });
+    if (rec.revisions && rec.revisions.length) {
+      lines.push('', '## Revision history', '', '| Version | Date & time | By | Change |', '|---|---|---|---|');
+      rec.revisions.forEach((r) => lines.push('| ' + r.v + ' | ' + fmtStamp(r.at) + ' | ' + (r.by || '') + ' | ' + (r.note || '') + ' |'));
+    }
+    return lines.join('\n') + '\n';
+  }
+
+  /* Records */
+  function storeModeHTML() {
+    if (!store.ready) return '<span class="store-mode local"><i></i>Loading…</span>';
+    return store.mode === 'cloud'
+      ? '<span class="store-mode" title="Only you can see these records"><i></i>Saved to your Claude account</span>'
+      : '<span class="store-mode local" title="Records are kept in this browser on this device"><i></i>Saved in this browser only</span>';
+  }
+  function renderStoreMode() { const el = $('#store-mode'); if (el) el.innerHTML = storeModeHTML(); }
+  function filteredRecords() {
+    const q = state.filters.q.trim().toLowerCase();
+    return store.records.filter((r) => {
+      if (state.filters.type && r.template !== state.filters.type) return false;
+      if (state.filters.status && (r.fields || {}).status !== state.filters.status) return false;
+      if (!q) return true;
+      return (r.id + ' ' + (r.author || '') + ' ' + recordText(r)).toLowerCase().indexOf(q) !== -1;
+    }).sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+  }
+  function recordRows() {
+    if (!store.ready) return '<div class="empty"><p>Loading your records…</p></div>';
+    if (!store.records.length) {
+      return '<div class="empty"><h2>No records yet</h2><p>Records appear here after you save them. Work through a scenario to create your first one, or add an example record to see what a finished record looks like.</p>' +
+        '<div class="btn-row"><a class="btn btn-primary" href="#scenarios">Choose a scenario</a><button class="btn" data-action="add-example">Add an example record</button></div></div>';
+    }
+    const list = filteredRecords();
+    if (!list.length) return '<div class="empty"><p>No records match your search.</p></div>';
+    return '<div class="table-wrap"><table class="records"><thead><tr><th>Record ID</th><th>Title</th><th>Type</th><th>Severity</th><th>Status</th><th>Occurred</th><th>Documented by</th><th>Check</th></tr></thead><tbody>' +
+      list.map((r) => {
+        const f = r.fields || {};
+        return '<tr data-open="' + esc(r.id) + '"><td class="mono nowrap">' + esc(r.id) + '</td><td><a href="#record-' + encodeURIComponent(r.id) + '">' + esc(f.title || 'Untitled') + '</a>' + (r.example ? ' <span class="chip chip-example">Example</span>' : '') + '</td>' +
+          '<td class="nowrap">' + esc(TEMPLATES[r.template].label) + '</td><td>' + sevChip(f.severity) + '</td><td>' + stChip(f.status) + '</td>' +
+          '<td class="mono nowrap">' + esc(fmtDT(f.occurred)) + '</td><td>' + esc(r.author || '') + '</td>' +
+          '<td class="mono nowrap">' + (r.check ? r.check.found + '/' + r.check.total : '—') + '</td></tr>';
+      }).join('') + '</tbody></table></div>';
+  }
+  function recordsView() {
+    const types = Object.keys(TEMPLATES).map((k) => '<option value="' + k + '"' + (state.filters.type === k ? ' selected' : '') + '>' + esc(TEMPLATES[k].label) + '</option>').join('');
+    const statuses = FIELDS.status.options.map((o) => '<option' + (state.filters.status === o ? ' selected' : '') + '>' + esc(o) + '</option>').join('');
+    const blanks = Object.keys(TEMPLATES).map((k) => '<button class="btn btn-sm" data-action="blank" data-template="' + k + '">' + esc(TEMPLATES[k].label) + '</button>').join('');
+    return '<div class="page-head"><div><p class="eyebrow">Records</p><h1>Documentation log</h1><p class="lead">Every record you save, newest first. Open one to read it, edit it (each edit is kept in its revision history), or export it.</p></div><span class="spacer"></span>' +
+      '<button class="btn" data-action="export-all"' + (store.records.length ? '' : ' disabled') + '>Download all (JSON)</button></div>' +
+      '<div class="toolbar"><input type="search" id="rec-q" placeholder="Search by ID, title, person, system…" value="' + esc(state.filters.q) + '" aria-label="Search records">' +
+      '<select id="rec-type" aria-label="Filter by type"><option value="">All types</option>' + types + '</select>' +
+      '<select id="rec-status" aria-label="Filter by status"><option value="">All statuses</option>' + statuses + '</select>' +
+      '<span id="store-mode">' + storeModeHTML() + '</span></div>' +
+      '<div id="rec-rows">' + recordRows() + '</div>' +
+      '<div class="new-row"><span>New blank record:</span>' + blanks + '</div>';
+  }
+
+  function recordView() {
+    if (!store.ready) return '<div class="empty"><p>Loading record…</p></div>';
+    const rec = store.records.find((r) => r.id === state.recordId);
+    if (!rec) return '<div class="empty"><h2>Record not found</h2><p>It may have been deleted.</p><div class="btn-row"><a class="btn" href="#records">Back to records</a></div></div>';
+    const sc = scenarioById(rec.scenarioId);
+    const del = state.confirmDelete
+      ? '<span class="muted">Delete ' + esc(rec.id) + ' permanently?</span><button class="btn btn-danger btn-sm" data-action="confirm-delete">Delete</button><button class="btn btn-ghost btn-sm" data-action="cancel-delete">Keep</button>'
+      : '<button class="btn btn-ghost btn-sm" data-action="delete">' + ICON.trash + 'Delete</button>';
+    const check = rec.check ? '<div class="pane check-summary"><span class="eyebrow">Documentation check</span><strong class="mono">' + rec.check.found + '/' + rec.check.total + ' key facts</strong><span class="muted">' + (sc ? 'Scenario: ' + esc(sc.title) : '') + '</span></div>' : '';
+    return '<div class="record-bar"><a class="btn btn-ghost btn-sm" href="#records">← All records</a><span class="spacer"></span>' +
+      '<button class="btn btn-sm" data-action="edit">Edit</button><button class="btn btn-sm" data-action="copy-md">Copy as Markdown</button><button class="btn btn-sm" data-action="download-md">Download .md</button>' + del + '</div>' +
+      check + docHTML(rec) +
+      '<details class="md"><summary>Markdown version</summary><pre id="md-text">' + esc(toMarkdown(rec)) + '</pre></details>';
+  }
+
+  /* Guide */
+  function guideView() {
+    const w = [
+      ['Who', 'Who reported it, who is affected (and how many), who did each action, who was told.', 'Maria Santos (Accounting, local 2231); 3 users affected'],
+      ['What', 'The system or asset, the symptoms, the exact error message, the impact.', 'FS01, S: drive; “Windows cannot access \\\\FS01\\Accounting”'],
+      ['When', 'The date, and the time of every event and action. 24-hour time, full date, time zone.', '2026-10-28 09:42 PHT'],
+      ['Where', 'Department, floor, building, room; hostname, IP address or asset tag.', 'Accounting, 2nd floor; server room, Main Building'],
+      ['Why', 'The cause (or “unknown, under investigation”), and why it matters to the business.', 'Server service crashed (Event ID 7034); payroll due 12:00'],
+      ['How', 'What you did to investigate and fix it, how you confirmed the fix, and what follows.', 'Restarted service 09:58; user confirmed 10:03']
+    ];
+    const tpls = Object.keys(TEMPLATES).map((k) => '<tr><td>' + esc(TEMPLATES[k].label) + '</td><td class="mono">' + TEMPLATES[k].prefix + '-' + new Date().getFullYear() + '-0001</td><td>' + esc(TEMPLATES[k].use) + '</td></tr>').join('');
+    return '<div class="guide"><div class="page-head"><div><p class="eyebrow">How to document</p><h1>Write it so anyone can understand it later</h1><p class="lead">Good documentation lets a colleague, a manager or an auditor understand exactly what happened without asking you. Cover the six questions below for every event.</p></div></div>' +
+      '<div class="pane"><h2>The six questions: 5W1H</h2><div class="table-wrap" style="margin-top:12px"><table><thead><tr><th>Question</th><th>What to record</th><th>Example</th></tr></thead><tbody>' +
+      w.map((r) => '<tr><td>' + r[0] + '</td><td>' + esc(r[1]) + '</td><td>' + esc(r[2]) + '</td></tr>').join('') + '</tbody></table></div></div>' +
+      '<div class="pane"><h2>Rules for good documentation</h2><ol class="rules">' +
+      '<li><strong>Record the date and time of everything.</strong> Use the full date (YYYY-MM-DD) and 24-hour time.</li>' +
+      '<li><strong>Write it as it happens.</strong> Notes written hours later miss details and get times wrong.</li>' +
+      '<li><strong>Copy error messages word for word.</strong> “It had an error” helps nobody.</li>' +
+      '<li><strong>Stick to facts.</strong> Write what you saw and did, not guesses. Mark guesses clearly as unconfirmed.</li>' +
+      '<li><strong>Don’t blame people.</strong> Describe what happened, not whose fault it was.</li>' +
+      '<li><strong>Record who was notified, and when.</strong> Personal data involved? The DPO must know (Data Privacy Act, 72-hour rule).</li>' +
+      '<li><strong>Never write down passwords.</strong> Say how credentials were delivered, never what they are.</li>' +
+      '<li><strong>Keep the status current</strong>, and list follow-up actions so nothing is forgotten.</li>' +
+      '<li><strong>Don’t rewrite history.</strong> Edits are kept as revisions with a reason, so the original stays traceable.</li></ol></div>' +
+      '<div class="pane"><h2>Poor entry vs. good entry</h2><div class="compare"><div class="bad-ex"><h3>Poor</h3><p>“Fixed the shared drive this morning. It was a server problem.”</p></div>' +
+      '<div class="good-ex"><h3>Good</h3><p class="mono" style="font-size:13.5px">09:58 Started the Server service (LanmanServer) on FS01 after it stopped at 09:31 (Event ID 7034). Set recovery to restart on failure. 10:03 Maria Santos confirmed access restored.</p></div></div></div>' +
+      '<div class="pane"><h2>Which template to use</h2><div class="table-wrap" style="margin-top:12px"><table><thead><tr><th>Template</th><th>ID format</th><th>Use it when</th></tr></thead><tbody>' + tpls + '</tbody></table></div></div>' +
+      '<div class="pane"><h2>How the documentation check works</h2><p style="margin-top:8px">Each scenario has a list of key facts: names, times, numbers, systems and actions a good record should contain. The check searches your whole record for them and also tests documentation standards, such as required fields, a complete timeline in time order, and no passwords. It is a guide to what you may have missed, not a grade.</p></div></div>';
+  }
+
+  /* ------------------------------------------------------------- interactions */
+  function toast(msg) {
+    const t = $('#toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toast.timer);
+    toast.timer = setTimeout(() => t.classList.remove('show'), 2800);
+  }
+
+  async function copyText(text) {
+    try { await navigator.clipboard.writeText(text); return true; } catch (e) {
+      const ta = document.createElement('textarea');
+      ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch (e2) { ok = false; }
+      ta.remove();
+      return ok;
+    }
+  }
+
+  async function offerDownload(filename, text) {
+    if (window.claude && typeof window.claude.use === 'function') {
+      const dl = await window.claude.use('downloads');
+      if (dl) {
+        try { await dl.save({ filename, data: text }); toast('Saved ' + filename); } catch (e) { if (!e || e.code !== 'declined') toast('Download is not available here. Use Copy as Markdown instead.'); }
+        return;
+      }
+      toast('Download is not available here. Use Copy as Markdown instead.');
+      return;
+    }
+    const blob = new Blob([text], { type: filename.endsWith('.json') ? 'application/json' : 'text/markdown' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = filename;
+    document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+    toast('Downloaded ' + filename);
+  }
+
+  function startDraft(opts) {
+    draft = newDraft(opts);
+    persistDraft();
+    state.review = null; state.showExample = false; state.pendingStart = null;
+    go('practice');
+  }
+
+  function go(hash) {
+    if (location.hash === '#' + hash) route(); else location.hash = hash;
+  }
+
+  function markInvalid() {
+    const missingKeys = TEMPLATES[draft.template].fields.filter((k) => FIELDS[k].req && !has(draft, k));
+    if (!String(draft.author || '').trim()) missingKeys.unshift('author');
+    $$('.field.invalid').forEach((el) => el.classList.remove('invalid'));
+    missingKeys.forEach((k) => { const el = $('.field[data-key="' + k + '"]'); if (el) el.classList.add('invalid'); });
+    const first = missingKeys.length && $('.field[data-key="' + missingKeys[0] + '"]');
+    if (first) { first.scrollIntoView({ block: 'center', behavior: 'smooth' }); const input = $('input, select, textarea', first); if (input) input.focus({ preventScroll: true }); }
+  }
+
+  async function saveRecord(btn) {
+    const missing = requiredMissing(draft);
+    if (missing.length) {
+      if (state.review) { state.review = null; render(); }
+      toast('Fill in the required fields first: ' + missing.join(', ') + '.');
+      markInvalid();
+      return;
+    }
+    const sc = scenarioById(draft.scenarioId);
+    const now = new Date().toISOString();
+    const by = draft.author.trim();
+    const timeline = draft.timeline.filter((e) => (e.t || '').trim() || (e.a || '').trim()).map((e) => ({ t: e.t || '', a: (e.a || '').trim() }));
+    const fields = {};
+    Object.keys(draft.fields).forEach((k) => { const v = String(draft.fields[k] || '').trim(); if (v) fields[k] = v; });
+    const ev = sc ? evaluate(draft) : null;
+    let rec;
+    if (draft.mode === 'edit') {
+      const old = store.records.find((r) => r.id === draft.editingId);
+      if (!old) { toast('This record no longer exists.'); return; }
+      rec = clone(old);
+      rec.fields = fields; rec.timeline = timeline; rec.updatedAt = now;
+      rec.version = (old.version || 1) + 1;
+      rec.revisions = (old.revisions || []).concat([{ v: rec.version, at: now, by, note: String(draft.changeNote || '').trim() || 'Updated' }]);
+      if (ev) rec.check = { found: ev.found, total: ev.total, at: now };
+    } else {
+      rec = {
+        id: nextId(TEMPLATES[draft.template].prefix), template: draft.template, scenarioId: draft.scenarioId, scenarioDate: draft.scenarioDate,
+        fields, timeline, author: by, createdAt: now, updatedAt: now, version: 1,
+        revisions: [{ v: 1, at: now, by, note: sc ? 'Created from the scenario “' + sc.title + '”' : 'Created' }],
+        check: ev ? { found: ev.found, total: ev.total, at: now } : null
+      };
+    }
+    if (btn) btn.disabled = true;
+    try { await store.save(rec); } catch (e) { if (btn) btn.disabled = false; return; }
+    clearDraft();
+    state.review = null;
+    toast('Saved ' + rec.id);
+    go('record-' + rec.id);
+  }
+
+  function route() {
+    const h = decodeURIComponent(location.hash.replace(/^#/, ''));
+    state.confirmDelete = false;
+    if (h === 'records') state.view = 'records';
+    else if (h === 'guide') state.view = 'guide';
+    else if (h === 'practice' && draft) state.view = 'practice';
+    else if (h.indexOf('record-') === 0) { state.view = 'record'; state.recordId = h.slice(7); }
+    else state.view = 'scenarios';
+    if (state.view !== 'practice') { state.review = null; state.showExample = false; }
+    render();
+    window.scrollTo(0, 0);
+  }
+
+  app.addEventListener('click', async (e) => {
+    const row = e.target.closest('tr[data-open]');
+    if (row && !e.target.closest('a')) { go('record-' + row.dataset.open); return; }
+    const btn = e.target.closest('[data-action]');
+    if (!btn) return;
+    const act = btn.dataset.action;
+    const sc = draft ? scenarioById(draft.scenarioId) : null;
+
+    if (act === 'start' || act === 'blank') {
+      const opts = act === 'start' ? { mode: 'scenario', scenarioId: btn.dataset.id } : { mode: 'blank', template: btn.dataset.template };
+      if (draft) { state.pendingStart = opts; if (state.view !== 'scenarios') go('scenarios'); else render(); window.scrollTo(0, 0); return; }
+      startDraft(opts);
+    } else if (act === 'confirm-start') { const opts = state.pendingStart; clearDraft(); startDraft(opts); }
+    else if (act === 'cancel-start') { state.pendingStart = null; render(); }
+    else if (act === 'resume') { state.pendingStart = null; go('practice'); }
+    else if (act === 'reveal' || act === 'reveal-all') {
+      draft.revealed = act === 'reveal' ? Math.min(sc.events.length, draft.revealed + 1) : sc.events.length;
+      persistDraft();
+      const pane = $('#feed-pane');
+      pane.innerHTML = feedHTML(sc, act === 'reveal');
+      const fresh = $('.event.fresh', pane) || $$('.event', pane).pop();
+      if (fresh) pane.scrollTop = fresh.offsetTop - pane.offsetTop - 12;
+      const next = $('[data-action="reveal"]', pane);
+      if (next) next.focus({ preventScroll: true });
+    } else if (act === 'now-field') {
+      const key = btn.dataset.field;
+      draft.fields[key] = nowLocal();
+      const input = $('#f-' + key); if (input) input.value = draft.fields[key];
+      saveDraftSoon();
+    } else if (act === 'now-entry') {
+      const i = Number(btn.dataset.i);
+      draft.timeline[i].t = hm(new Date());
+      const input = $('#tl-t-' + i); if (input) input.value = draft.timeline[i].t;
+      saveDraftSoon();
+    } else if (act === 'add-entry') {
+      draft.timeline.push({ t: draft.scenarioId ? '' : hm(new Date()), a: '' });
+      $('#tl-rows').innerHTML = timelineRowsHTML();
+      saveDraftSoon();
+      const i = draft.timeline.length - 1;
+      const input = $(draft.scenarioId ? '#tl-t-' + i : '#tl-a-' + i); if (input) input.focus();
+    } else if (act === 'remove-entry') {
+      draft.timeline.splice(Number(btn.dataset.i), 1);
+      $('#tl-rows').innerHTML = timelineRowsHTML();
+      saveDraftSoon();
+    } else if (act === 'check') {
+      persistDraft();
+      state.review = evaluate(draft);
+      $('#form-pane').innerHTML = reviewHTML();
+      $('#form-pane').scrollIntoView({ block: 'start', behavior: 'smooth' });
+    } else if (act === 'back') {
+      state.review = null; state.showExample = false;
+      $('#form-pane').innerHTML = formHTML();
+    } else if (act === 'toggle-example') {
+      state.showExample = !state.showExample;
+      $('#form-pane').innerHTML = reviewHTML();
+    } else if (act === 'save') { saveRecord(btn); }
+    else if (act === 'discard') {
+      if (btn.dataset.armed) {
+        const editing = draft.mode === 'edit' ? draft.editingId : null;
+        clearDraft(); state.review = null;
+        toast(editing ? 'Edit cancelled' : 'Draft discarded');
+        go(editing ? 'record-' + editing : 'scenarios');
+      } else {
+        btn.dataset.armed = '1';
+        btn.textContent = draft.mode === 'edit' ? 'Click again to cancel' : 'Click again to discard';
+        btn.classList.add('btn-danger');
+        setTimeout(() => { if (btn.isConnected) { delete btn.dataset.armed; btn.textContent = draft && draft.mode === 'edit' ? 'Cancel edit' : 'Discard'; btn.classList.remove('btn-danger'); } }, 4000);
+      }
+    } else if (act === 'edit') {
+      const rec = store.records.find((r) => r.id === state.recordId);
+      if (!rec) return;
+      if (draft) { toast('Finish or discard your unsaved draft first.'); state.pendingStart = null; go('scenarios'); return; }
+      const rsc = scenarioById(rec.scenarioId);
+      draft = {
+        mode: 'edit', editingId: rec.id, template: rec.template, scenarioId: rec.scenarioId || null, scenarioDate: rec.scenarioDate || null,
+        revealed: rsc ? rsc.events.length : 0, fields: clone(rec.fields || {}), timeline: clone(rec.timeline && rec.timeline.length ? rec.timeline : [{ t: '', a: '' }]),
+        author: LS.get(KEY_AUTHOR) || rec.author || '', changeNote: '', startedAt: new Date().toISOString()
+      };
+      persistDraft(); state.review = null;
+      go('practice');
+    } else if (act === 'delete') { state.confirmDelete = true; render(); }
+    else if (act === 'cancel-delete') { state.confirmDelete = false; render(); }
+    else if (act === 'confirm-delete') {
+      const id = state.recordId;
+      btn.disabled = true;
+      try { await store.remove(id); toast('Deleted ' + id); go('records'); } catch (err) { btn.disabled = false; toast('Could not delete the record. Try again.'); }
+    } else if (act === 'copy-md') {
+      const rec = store.records.find((r) => r.id === state.recordId);
+      if (!rec) return;
+      const ok = await copyText(toMarkdown(rec));
+      if (ok) toast('Copied ' + rec.id + ' as Markdown');
+      else { const d = $('details.md'); if (d) { d.open = true; const sel = window.getSelection(); const range = document.createRange(); range.selectNodeContents($('#md-text')); sel.removeAllRanges(); sel.addRange(range); } toast('Copy is blocked here. The text is selected below: press Ctrl+C.'); }
+    } else if (act === 'download-md') {
+      const rec = store.records.find((r) => r.id === state.recordId);
+      if (rec) offerDownload(rec.id + '.md', toMarkdown(rec));
+    } else if (act === 'export-all') {
+      offerDownload('documentation-records-' + ymd(new Date()) + '.json', JSON.stringify(store.records, null, 2));
+    } else if (act === 'add-example') {
+      const ex = SCENARIOS[0];
+      const date = ymd(new Date());
+      const m = modelRecord(ex, date);
+      const now = new Date().toISOString();
+      const rec = { id: nextId(TEMPLATES[ex.template].prefix), template: ex.template, scenarioId: ex.id, scenarioDate: date, fields: m.fields, timeline: m.timeline, author: 'Example', createdAt: now, updatedAt: now, version: 1, example: true,
+        revisions: [{ v: 1, at: now, by: 'Example', note: 'Example record added' }], check: null };
+      await store.save(rec);
+      changed();
+      toast('Example record added');
+    }
+  });
+
+  app.addEventListener('input', (e) => {
+    const t = e.target;
+    if (t.id === 'rec-q') { state.filters.q = t.value; $('#rec-rows').innerHTML = recordRows(); return; }
+    if (t.id === 'rec-type') { state.filters.type = t.value; $('#rec-rows').innerHTML = recordRows(); return; }
+    if (t.id === 'rec-status') { state.filters.status = t.value; $('#rec-rows').innerHTML = recordRows(); return; }
+    if (!draft) return;
+    if (t.dataset.field) draft.fields[t.dataset.field] = t.value;
+    else if (t.dataset.tl) { const entry = draft.timeline[Number(t.dataset.i)]; if (entry) entry[t.dataset.tl] = t.value; }
+    else if (t.id === 'f-author') { draft.author = t.value; LS.set(KEY_AUTHOR, t.value); }
+    else if (t.id === 'f-change') draft.changeNote = t.value;
+    else return;
+    const field = t.closest('.field.invalid'); if (field) field.classList.remove('invalid');
+    saveDraftSoon();
+  });
+
+  app.addEventListener('change', (e) => {
+    const t = e.target;
+    if (!draft || !(t.dataset.kind === 'datetime' || t.dataset.tl === 't')) return;
+    const norm = t.dataset.kind === 'datetime' ? normDT(t.value) : normTime(t.value);
+    if (norm === null) {
+      t.setAttribute('aria-invalid', 'true');
+      toast(t.dataset.kind === 'datetime' ? 'Write the date and time as YYYY-MM-DD HH:MM, e.g. ' + nowLocal() + '.' : 'Write the time as HH:MM in 24-hour format, e.g. 14:05.');
+      return;
+    }
+    t.removeAttribute('aria-invalid');
+    t.value = norm;
+    if (t.dataset.kind === 'datetime') draft.fields[t.dataset.field] = norm;
+    else { const entry = draft.timeline[Number(t.dataset.i)]; if (entry) entry.t = norm; }
+    saveDraftSoon();
+  });
+
+  /* ------------------------------------------------------------------ clock */
+  function tick() {
+    const d = new Date();
+    $('#clock-date').textContent = DAYS[d.getDay()].slice(0, 3) + ' ' + ymd(d);
+    $('#clock-time').textContent = d.toTimeString().slice(0, 8);
+    $('#clock-tz').textContent = tzLabel;
+  }
+
+  /* ------------------------------------------------------------------- boot */
+  loadDraft();
+  if (draft && !TEMPLATES[draft.template]) clearDraft();
+  tick();
+  setInterval(tick, 1000);
+  window.addEventListener('hashchange', route);
+  route();
+  store.init();
+})();
+</script>
+<!-- app:end -->
 </body>
 </html>

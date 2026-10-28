@@ -1,96 +1,74 @@
-# SysAdmin Docs: Professional Practices and Documentation
+# SysAdmin Documentation Lab
 
-A simple documentation website made by **Albao Group** for the *System Administration and Maintenance* course. It covers our report topic, **Professional Practices and Documentation**:
+A web-based documentation practice system for the *System Administration and Maintenance* course, made by **Albao Group** for the report **Professional Practices and Documentation**.
 
-1. Documentation standards
-2. IT policies and compliance
-3. Ethical issues in system administration
+You pick a realistic scenario. Updates arrive one at a time, each with its own time. You document the situation the way a system administrator should, check your record against the facts that matter, and save it to a documentation log.
 
-The site is both the report and a working demonstration. Every page uses the documentation practices it describes: document control, versioning, templates, search, cross-references and revision history.
+## How it works
 
-## Running the site
+1. **Pick a scenario** on the *Scenarios* tab.
+2. **Read the updates** in the left panel. Click **Show next update** to reveal each event: phone calls, emails, alerts and your own actions, each time-stamped.
+3. **Document it** in the form on the right:
+   - Date and time (`YYYY-MM-DD HH:MM`, 24-hour; entries like `9:42` or `2:05 pm` are corrected automatically)
+   - Who reported it, contact details, department and location
+   - Affected system, severity, impact and exact error messages
+   - A **timeline** with one time-stamped entry per action
+   - Cause, resolution, status and follow-up actions
+4. **Check my documentation** scores your record against the scenario's key facts, grouped by **Who, What, When, Where, Why, How (5W1H)**, and against documentation standards: required fields, timeline in time order, no passwords. **Show example documentation** shows a model answer.
+5. **Save record.** It gets an ID such as `INC-2026-0001` and appears in the *Records* tab.
 
-No installation or internet connection is needed.
+## Features
 
-- **Easiest:** open `index.html` in any modern browser (double-click it).
-- **Local web server** (optional):
-
-  ```bash
-  python3 -m http.server 8000
-  # then open http://localhost:8000
-  ```
-
-### Publishing with GitHub Pages
-
-1. On GitHub, open the repository's **Settings → Pages**.
-2. Under **Build and deployment**, choose **Deploy from a branch**.
-3. Select the branch that holds the site and the `/ (root)` folder, then click **Save**.
-4. After a minute the site is live at `https://zaizkuu.github.io/Simple-Documentation-Demo/`.
-
-## What's inside
-
-| Section | Pages |
+| Feature | What it demonstrates |
 |---|---|
-| Report topics | Documentation Standards · IT Policies & Compliance · Ethics in System Administration |
-| Sample documents | SOP (new user account) · Runbook (backup & restore) · Incident report · Change request · Network & asset inventory |
-| Resources | Templates (downloadable Markdown) · Glossary · About & References |
+| Live clock and **Now** buttons | Recording the current date and time |
+| Templates: Incident Report, Service Request, Security Incident Report, Maintenance Log | Choosing the right document type |
+| Required fields (marked `*`) that block saving | Mandatory information |
+| Automatic record IDs (`INC-`, `REQ-`, `SEC-`, `MNT-` + year + number) | Naming and numbering conventions |
+| Time-stamped action timeline | Chronological record keeping |
+| Documentation check with 5W1H breakdown and example answer | What "complete" documentation means |
+| Edit with **reason for change** and revision history (version 1, 2, 3…) | Document control and audit trail |
+| Records log with search and filters | Finding past documentation |
+| Copy as Markdown, download `.md`, download all as JSON | Exporting and sharing records |
+| Auto-saved draft | Not losing work in progress |
+| *How to document* guide | 5W1H, rules for good documentation, template guide |
 
-### Documentation features demonstrated
+## Scenarios
 
-| Feature | Where to see it |
-|---|---|
-| Sidebar navigation, breadcrumbs, previous/next links | Every page |
-| Full-text search (<kbd>Ctrl</kbd>+<kbd>K</kbd> or <kbd>/</kbd>) | Top bar |
-| “On this page” table of contents with scroll tracking | Right side (wide screens) |
-| Document control block, status badges, version numbers | Sample documents |
-| Revision history | End of every sample document |
-| Callouts (note, tip, warning, danger) | All pages |
-| Code blocks with copy button | SOP, runbook, change request |
-| Tabs (Linux / Windows) that stay in sync and are remembered | SOP |
-| Diagrams (lifecycle, policy pyramid, network, backup flow) | Standards, Policies, Network, Runbook |
-| Interactive checklists (progress saved in the browser) | Policies, SOP, change request |
-| Scenario quizzes | Ethics |
-| Templates with copy and download | Templates |
-| Searchable glossary and hover definitions | Glossary, `abbr` terms |
-| Section deep links (hover a heading, click `#`) | All pages |
-| Print / Save as PDF layout | Printer icon under each page title |
-| Dark mode | Sun/moon icon in the top bar |
-| “Was this page helpful?” feedback | End of every page |
+| Scenario | Template | Level |
+|---|---|---|
+| Shared drive is down | Incident Report | Easy |
+| Accounts for a new employee | Service Request | Easy |
+| Phishing email: account hacked | Security Incident Report | Medium |
+| Server room is overheating | Incident Report | Medium |
+| Company laptop stolen | Security Incident Report | Medium |
+| Nightly backup failed | Maintenance Log | Easy |
 
-## Presenter's demo script (about 7 minutes)
+The *Document a real event* section starts a blank record from any template.
 
-1. **Home page:** introduce the three topics and point out that the site follows its own rules.
-2. **Documentation Standards:** scroll through and show the *On this page* panel highlighting the current section. Show the seven Cs table, the poor vs. good step example and the lifecycle diagram.
-3. **Search:** press <kbd>Ctrl</kbd>+<kbd>K</kbd>, type `backup`, and open a result. It jumps straight to the section.
-4. **SOP sample:** show the document control block, then switch the **Linux / Windows** tabs. The verification and rollback tabs switch too. Click **Copy** on a command and tick a checklist item.
-5. **IT Policies & Compliance:** show the policy pyramid, open a few policy accordions, and tick items in the compliance checklist. Mention the Data Privacy Act and the 72-hour breach notification.
-6. **Incident report:** walk through the timeline, the 5 Whys and the corrective actions. Point out that the root cause was an *undocumented* change.
-7. **Ethics:** let the class vote on Scenario 1, then click an answer to reveal the discussion.
-8. **Finish:** toggle dark mode, click the printer icon to show the PDF layout, and open the **Templates** page to download a template.
+## Running it
 
-## Project structure
+The whole system is one file, `index.html`. It needs no server or installation.
 
-```
-index.html                       Home page
-pages/                           Report topics and resources
-pages/samples/                   Sample documents
-assets/css/style.css             Design, dark mode and print layout
-assets/js/site.js                Navigation (NAV list), search, interactive features
-assets/js/search-index.js        Generated search index (do not edit by hand)
-scripts/build-search-index.mjs   Rebuilds the search index
-```
+- **On your computer:** open `index.html` in a browser.
+- **GitHub Pages:** in the repository go to **Settings → Pages**, choose **Deploy from a branch**, pick this branch and `/ (root)`, and save. The site appears at `https://zaizkuu.github.io/Simple-Documentation-Demo/`.
 
-## Editing the site
+### Where records are saved
 
-- **Group members:** edit the table in `pages/about.html` (look for `[Member name]`).
-- **Add a page:** copy an existing page, change its `<title>`, `data-page` and content, add it to the `NAV` list at the top of `assets/js/site.js`, then rebuild the search index:
+- **Opened from a file or GitHub Pages:** in that browser's local storage, on that device only. Use **Download all (JSON)** to keep a copy.
+- **Opened from the Claude artifact link:** in your own private storage on your Claude account.
 
-  ```bash
-  node scripts/build-search-index.mjs
-  ```
+## Suggested demo (about 5 minutes)
 
-- **After any content change:** update the page's `data-updated` date (and `data-version` if needed) and rebuild the search index.
+1. Show the *Scenarios* tab and the live clock.
+2. Start **Shared drive is down**. Reveal the first update and document it live: title, date and time, reporter, contact, the error message, a timeline entry.
+3. Reveal the remaining updates, adding a timeline entry for each.
+4. Click **Check my documentation**: walk through the 5W1H score and the missed facts, then open the example answer.
+5. Save the record. Show the record view, edit it with a reason, and point out the revision history.
+6. Finish on the *How to document* tab.
 
-## Notes
+## Changing the scenarios
 
-Example Corp and all names, servers, IP addresses and records in the sample documents are fictional. Summaries of laws and standards are simplified for teaching and are not legal advice.
+Scenarios are defined in the `SCENARIOS` list inside `index.html`. Each has its updates (`events`), the key facts the check looks for (`facts`), and an example answer (`model`). Dates are written as `{date}`, `{date-1}` or `{nextMonday}` and filled in with real dates when a scenario starts.
+
+All people, systems and addresses in the scenarios are fictional.
