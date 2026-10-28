@@ -36,6 +36,8 @@ You pick a realistic scenario. Updates arrive one at a time, each with its own t
 
 ## Scenarios
 
+**Practice scenarios**, for demos and self-study:
+
 | Scenario | Template | Level |
 |---|---|---|
 | Shared drive is down | Incident Report | Easy |
@@ -44,6 +46,19 @@ You pick a realistic scenario. Updates arrive one at a time, each with its own t
 | Server room is overheating | Incident Report | Medium |
 | Company laptop stolen | Security Incident Report | Medium |
 | Nightly backup failed | Maintenance Log | Easy |
+
+**Class activity scenarios**, kept separate so classmates haven't seen the answers:
+
+| Scenario | Template | Level |
+|---|---|---|
+| Office internet is down | Incident Report | Easy |
+| Website shows a security warning | Incident Report | Medium |
+| Folder access for an auditor | Service Request | Easy |
+| Files locked by ransomware | Security Incident Report | Medium |
+| Server disk is failing | Maintenance Log | Easy |
+| Employee resigned: remove access | Service Request | Medium |
+
+The class link opens a **Class activity** page that lists only the class scenarios (`#class`). It can also open one class scenario (`#start-<id>`), or give **each person a random one** (`#start-random`), so people sitting together get different scenarios.
 
 The *Document a real event* section starts a blank record from any template.
 
@@ -71,7 +86,7 @@ The whole site is one file, `index.html`. It needs no build step.
 
 Classmates open the site, do a scenario, type their name in **Documented by** and click **Submit to class**. No account is needed. The presenter opens **Class review**, enters the review code, and can:
 
-- show a **QR code and link** that opens a chosen scenario directly
+- show a **QR code and link** that opens the class activity page, one scenario, or a random class scenario for each person
 - see every submission with its key-fact score and how often the person used the check
 - sort and filter, turn on auto-refresh, and step through submissions with **Previous / Next** (or the ← → keys)
 - **compare** each submission with the example answer

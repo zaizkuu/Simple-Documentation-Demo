@@ -845,9 +845,323 @@ details.md pre { margin: 10px 0 0; padding: 16px; overflow-x: auto; border-radiu
           ['09:00', 'Impact: about 7 hours of changes unprotected; no data lost.']
         ]
       }
+    },
+    {
+      id: 'office-internet', set: 'class', template: 'incident', level: 'Easy', minutes: 10,
+      title: 'Office internet is down',
+      summary: 'Nobody in the main office can reach websites, but the shared drives still work.',
+      role: 'You are the system administrator on duty at Example Corp’s main office. Record the incident from the first report until the internet is fully back.',
+      events: [
+        { t: '08:05', ch: 'Phone call', from: 'Rhea Mendoza · Front Desk · local 1001',
+          body: '“Good morning. The internet isn’t working at the front desk, and people on the 3rd floor say the same. Websites just say “This site can’t be reached”. We can still open the shared drives.”' },
+        { t: '08:12', ch: 'Your investigation', from: 'Firewall fw-01',
+          body: 'The primary internet link (ISP: FiberNet, circuit ID FN-88213) is down. The backup LTE link is connected but is not set up for automatic failover. The internal network is working normally.' },
+        { t: '08:18', ch: 'Phone call', from: 'You → FiberNet support',
+          body: 'You report the outage and get ticket number FN-TKT-55102. FiberNet confirms a fiber cut in the area. Estimated repair time: 4 hours.' },
+        { t: '08:25', ch: 'Your action', from: 'Firewall fw-01',
+          body: 'You switch internet traffic to the backup LTE link. Websites load again, but slower: about 20 Mbps instead of the usual 300 Mbps.' },
+        { t: '08:30', ch: 'Email', from: 'You → All staff',
+          body: 'You tell everyone the internet is back on a slower backup line, and ask them to avoid large downloads and video calls until further notice.' },
+        { t: '12:40', ch: 'Monitoring alert', from: 'Firewall fw-01',
+          body: 'The primary FiberNet link is back up. You switch traffic back to it at 12:45 and confirm full speed.' }
+      ],
+      facts: [
+        { w: 'When', label: 'Date of the incident', any: ['{date}'] },
+        { w: 'When', label: 'Time it was reported (08:05)', any: [T('08:05')] },
+        { w: 'Who', label: 'Reported by Rhea Mendoza (Front Desk)', any: ['mendoza'] },
+        { w: 'Where', label: 'Where: front desk and 3rd floor', any: ['front desk', '3rd floor', 'third floor'] },
+        { w: 'What', label: 'Exact error message', any: ['be reached'], hint: 'Copy the error word for word: “This site can’t be reached”.' },
+        { w: 'What', label: 'Affected: primary internet link on fw-01', any: ['fw-01', 'fibernet'] },
+        { w: 'Why', label: 'Cause: fiber cut in the area', any: ['fiber cut', 'fibre cut'] },
+        { w: 'What', label: 'ISP ticket FN-TKT-55102', any: ['55102'], hint: 'Always record the vendor’s ticket number.' },
+        { w: 'How', label: 'Switched to the backup LTE link at 08:25', check: (d, text) => text.includes('lte') && T('08:25').test(text) },
+        { w: 'Who', label: 'Staff informed at 08:30', any: [T('08:30')] },
+        { w: 'What', label: 'Impact: slower internet (about 20 Mbps)', any: ['20 mbps', '20mbps', 'slower', 'slow'] },
+        { w: 'When', label: 'Primary link restored (12:40, switched back 12:45)', any: [T('12:40'), T('12:45')] },
+        { w: 'How', label: 'Follow-up: set up automatic failover', check: (d) => /fail ?-?over|automatic/i.test(d.fields.followup || ''), hint: 'Failover had to be switched by hand. That needs fixing.' }
+      ],
+      model: {
+        title: 'Office internet down: FiberNet fiber cut', occurred: '{date} 08:05', reporter: 'Rhea Mendoza, Front Desk', contact: 'Local 1001',
+        location: 'Main office: front desk and 3rd floor (all floors)', affected: 'Primary internet link (FiberNet, circuit FN-88213) on firewall fw-01', category: 'Network', severity: 'High',
+        impact: 'No internet for all staff from 08:05 to 08:25. Slower internet (about 20 Mbps) on the backup link until 12:45. Shared drives not affected.',
+        description: 'Websites show “This site can’t be reached”. Internal network and shared drives work.',
+        cause: 'Fiber cut in the area on the ISP’s side (FiberNet ticket FN-TKT-55102). The backup LTE link was not set up for automatic failover.',
+        resolution: 'Switched to the backup LTE link at 08:25. FiberNet repaired the line; switched back to the primary link at 12:45.', resolved: '{date} 12:45', status: 'Resolved',
+        followup: 'Configure automatic failover to the LTE link on fw-01 so staff are not cut off next time.',
+        timeline: [
+          ['08:05', 'Call from Rhea Mendoza (Front Desk, local 1001): “This site can’t be reached” at front desk and 3rd floor; shared drives OK.'],
+          ['08:12', 'fw-01: primary FiberNet link (FN-88213) down; backup LTE connected but no automatic failover.'],
+          ['08:18', 'Reported to FiberNet, ticket FN-TKT-55102. Fiber cut in the area; repair about 4 hours.'],
+          ['08:25', 'Switched internet traffic to the backup LTE link (about 20 Mbps).'],
+          ['08:30', 'Emailed all staff: slower backup line, avoid large downloads and video calls.'],
+          ['12:40', 'Primary FiberNet link back up. Switched back at 12:45; full speed confirmed.']
+        ]
+      }
+    },
+    {
+      id: 'cert-expired', set: 'class', template: 'incident', level: 'Medium', minutes: 12,
+      title: 'Website shows a security warning',
+      summary: 'Customers see “Your connection is not private” on the company website before a promo launch.',
+      role: 'You are the system administrator responsible for Example Corp’s public website. Record the incident and how you fixed it.',
+      events: [
+        { t: '07:20', ch: 'Email', from: 'Jerome Santiago · Marketing · local 2410',
+          body: '“Customers are messaging us that our website shows “Your connection is not private” with the error NET::ERR_CERT_DATE_INVALID. It started this morning. Our online promo launches at 10:00!”' },
+        { t: '07:28', ch: 'Your investigation', from: 'Web server web-01',
+          body: 'The TLS certificate for www.example.com expired today at 00:00. Automatic renewal (certbot) has been failing since {date-30}, when port 80 was closed on the firewall during a change.' },
+        { t: '07:40', ch: 'Your action', from: 'Firewall fw-01',
+          body: 'You open port 80 to web-01 again. Certificate renewal needs it for the HTTP-01 check.' },
+        { t: '07:45', ch: 'Your action', from: 'Web server web-01',
+          body: 'You run certbot renew and reload nginx. The new certificate is valid for 90 days.' },
+        { t: '07:52', ch: 'Your investigation', from: 'Browser tests',
+          body: 'The website loads without a warning in Chrome, Firefox and on a phone. You tell Jerome at 07:55.' },
+        { t: '08:30', ch: 'Your action', from: 'Monitoring',
+          body: 'You add a monitoring alert that warns 14 days before any certificate expires.' }
+      ],
+      facts: [
+        { w: 'When', label: 'Date of the incident', any: ['{date}'] },
+        { w: 'When', label: 'Time it was reported (07:20)', any: [T('07:20')] },
+        { w: 'Who', label: 'Reported by Jerome Santiago (Marketing)', any: ['santiago'] },
+        { w: 'What', label: 'Exact error (NET::ERR_CERT_DATE_INVALID)', any: ['err_cert_date_invalid', 'not private'], hint: 'Copy the browser error exactly.' },
+        { w: 'What', label: 'Affected: www.example.com on web-01', any: ['web-01', 'www.example.com'] },
+        { w: 'Why', label: 'Business impact: promo launching at 10:00', any: ['promo'] },
+        { w: 'Why', label: 'Cause: certificate expired at 00:00', any: ['expired'] },
+        { w: 'Why', label: 'Root cause: renewal failing because port 80 was closed', all: ['port 80'], any: ['renew', 'certbot'] },
+        { w: 'How', label: 'Port 80 reopened at 07:40', check: (d, text) => text.includes('port 80') && T('07:40').test(text) },
+        { w: 'How', label: 'Certificate renewed and nginx reloaded (07:45)', any: [T('07:45')] },
+        { w: 'How', label: 'Fix verified in browsers', any: ['chrome', 'firefox', 'browser', 'verified', 'tested'] },
+        { w: 'When', label: 'Reporter informed at 07:55', any: [T('07:55')] },
+        { w: 'How', label: 'Follow-up: certificate expiry monitoring', check: (d) => /monitor|alert|14 days/i.test(d.fields.followup || '') }
+      ],
+      model: {
+        title: 'Website security warning: TLS certificate for www.example.com expired', occurred: '{date} 07:20', reporter: 'Jerome Santiago, Marketing', contact: 'Local 2410',
+        location: 'Public website (web-01)', affected: 'www.example.com on web server web-01; firewall fw-01', category: 'Security', severity: 'High',
+        impact: 'Customers saw a security warning and could not use the site safely. Online promo launching at 10:00 was at risk.',
+        description: 'Browsers show “Your connection is not private” (NET::ERR_CERT_DATE_INVALID) since this morning.',
+        cause: 'The TLS certificate expired at 00:00. Automatic renewal (certbot) had been failing since {date-30} because port 80 was closed on the firewall during a change.',
+        resolution: 'Reopened port 80 to web-01, renewed the certificate with certbot and reloaded nginx. Verified in Chrome, Firefox and on a phone.', resolved: '{date} 07:52', status: 'Resolved',
+        followup: 'Monitoring alert added 14 days before any certificate expires. Add “check certificate renewal” to the firewall change checklist.',
+        timeline: [
+          ['07:20', 'Email from Jerome Santiago (Marketing, local 2410): “Your connection is not private”, NET::ERR_CERT_DATE_INVALID; promo at 10:00.'],
+          ['07:28', 'web-01: certificate for www.example.com expired at 00:00; certbot renewal failing since {date-30} (port 80 closed).'],
+          ['07:40', 'Reopened port 80 to web-01 on fw-01 (needed for HTTP-01 renewal).'],
+          ['07:45', 'Ran certbot renew and reloaded nginx; new certificate valid 90 days.'],
+          ['07:52', 'Verified in Chrome, Firefox and on a phone: no warning.'],
+          ['07:55', 'Informed Jerome Santiago that the site is fixed.'],
+          ['08:30', 'Added monitoring alert 14 days before certificate expiry.']
+        ]
+      }
+    },
+    {
+      id: 'auditor-access', set: 'class', template: 'request', level: 'Easy', minutes: 10,
+      title: 'Folder access for an auditor',
+      summary: 'Finance asks for temporary, read-only access to one folder for an external auditor.',
+      role: 'You are a system administrator at Example Corp. Record the request and every step you take to complete it.',
+      events: [
+        { t: '09:10', ch: 'Email', from: 'Carmela Torres · Finance Manager · local 3105',
+          body: 'Subject: Temporary access for external auditor (REQ-2077)\n\nPlease give our external auditor, Mr. Daniel Ong of Ong & Partners, read-only access to the \\\\FS01\\Finance\\Audit-2026 folder from today until {date+7}. He will use the guest laptop in Meeting Room B.\n\nApproved by me as Finance Manager.\n\nCarmela' },
+        { t: '09:25', ch: 'Your action', from: 'Active Directory',
+          body: 'You create a temporary account dong.audit in the Contractors OU. It expires automatically on {date+7} at 18:00.' },
+        { t: '09:35', ch: 'Your action', from: 'File server FS01',
+          body: 'You give dong.audit Read-only permission on \\\\FS01\\Finance\\Audit-2026 only. It has no access to any other Finance folder.' },
+        { t: '09:40', ch: 'Your action', from: 'Guest laptop, Meeting Room B',
+          body: 'You test the account: the Audit-2026 folder opens, but saving a file is blocked. Other folders show “Access denied”. Read-only access works as intended.' },
+        { t: '09:50', ch: 'Phone call', from: 'You → Carmela Torres',
+          body: 'You confirm the access is ready and ends automatically on {date+7}. Carmela will give Mr. Ong the temporary password in person.' }
+      ],
+      facts: [
+        { w: 'When', label: 'Date of the request', any: ['{date}'] },
+        { w: 'When', label: 'Time received (09:10)', any: [T('09:10')] },
+        { w: 'Who', label: 'Requested by Carmela Torres (Finance Manager)', any: ['torres'] },
+        { w: 'Who', label: 'Requested for Daniel Ong, external auditor', any: [/\bong\b/] },
+        { w: 'What', label: 'Ticket number REQ-2077', any: ['2077'] },
+        { w: 'What', label: 'Folder: \\\\FS01\\Finance\\Audit-2026', any: ['audit-2026'] },
+        { w: 'What', label: 'Access level: read-only', any: ['read-only', 'read only', 'readonly'], hint: 'Least privilege: record exactly what level of access was given.' },
+        { w: 'When', label: 'Access ends on {date+7}', any: ['{date+7}'], hint: 'Temporary access must have a recorded end date.' },
+        { w: 'What', label: 'Account created: dong.audit', any: ['dong.audit'] },
+        { w: 'How', label: 'Access tested (read works, saving and other folders blocked)', any: ['test', 'access denied', 'blocked'] },
+        { w: 'Who', label: 'Approval recorded', check: (d) => has(d, 'approval') && /torres|finance manager|approved/i.test(d.fields.approval || '') },
+        { w: 'When', label: 'Completed at 09:50', any: [T('09:50')] }
+      ],
+      model: {
+        title: 'Temporary read-only access for external auditor Daniel Ong (REQ-2077)', occurred: '{date} 09:10', reporter: 'Carmela Torres, Finance Manager', contact: 'Local 3105',
+        location: 'Finance Department; guest laptop in Meeting Room B', affected: 'Daniel Ong, external auditor (Ong & Partners); folder \\\\FS01\\Finance\\Audit-2026',
+        request: 'Read-only access for external auditor Daniel Ong to \\\\FS01\\Finance\\Audit-2026 only, from {date} until {date+7}.',
+        approval: 'Approved by Carmela Torres, Finance Manager. Ticket REQ-2077.',
+        resolution: 'Temporary account dong.audit created (expires {date+7} 18:00) with read-only access to Audit-2026 only. Tested.', resolved: '{date} 09:50', status: 'Closed',
+        followup: 'Confirm the account dong.audit is disabled after {date+7} 18:00.',
+        timeline: [
+          ['09:10', 'Request by email from Carmela Torres (Finance Manager), REQ-2077: read-only access for auditor Daniel Ong until {date+7}.'],
+          ['09:25', 'Created temporary account dong.audit in Contractors OU, expiring {date+7} 18:00.'],
+          ['09:35', 'Granted dong.audit read-only permission on \\\\FS01\\Finance\\Audit-2026 only.'],
+          ['09:40', 'Tested on guest laptop: folder opens, saving blocked, other folders “Access denied”.'],
+          ['09:50', 'Confirmed with Carmela Torres; she will give the temporary password in person.']
+        ]
+      }
+    },
+    {
+      id: 'ransomware', set: 'class', template: 'security', level: 'Medium', minutes: 15,
+      title: 'Files locked by ransomware',
+      summary: 'An HR employee opened an email attachment, and now her files are locked with a ransom note.',
+      role: 'You are the system administrator handling security incidents at Example Corp. Act fast, and record every step with its time.',
+      events: [
+        { t: '13:15', ch: 'Phone call', from: 'Lea Navarro · HR · local 4120',
+          body: '“All my files have strange names now. They end in .locked, and there’s a note on my desktop asking for payment in Bitcoin. About 20 minutes ago I opened an email attachment called Invoice_Oct.zip.”' },
+        { t: '13:18', ch: 'Your action', from: 'PC HR-PC-07',
+          body: 'You tell Lea to unplug the network cable and not to turn off the PC. You also disable its switch port. HR-PC-07 is now isolated from the network.' },
+        { t: '13:30', ch: 'Your investigation', from: 'Endpoint protection console',
+          body: 'Ransomware detected on HR-PC-07. It encrypted 1,240 files on the PC and tried to reach the shared drive \\\\FS01\\HR, but the file server shows no changed files.' },
+        { t: '13:45', ch: 'Your action', from: 'Notification',
+          body: 'You report the incident to the IT Manager, Engr. Paolo Dizon, and to the Data Protection Officer, Atty. Grace Tan. The encrypted files include employee 201 files (personnel records) with personal data.' },
+        { t: '14:30', ch: 'Your action', from: 'PC HR-PC-07',
+          body: 'You wipe and reinstall the PC and restore Lea’s files from last night’s backup (taken at 01:30). No ransom is paid.' },
+        { t: '15:10', ch: 'Note', from: 'You',
+          body: 'Lea confirms her files are back. Changes she made this morning are lost. You block the sender’s domain on the email gateway.' }
+      ],
+      facts: [
+        { w: 'When', label: 'Date of the incident', any: ['{date}'] },
+        { w: 'When', label: 'Time reported (13:15)', any: [T('13:15')] },
+        { w: 'Who', label: 'Reported by Lea Navarro (HR)', any: ['navarro'] },
+        { w: 'What', label: 'Affected PC: HR-PC-07', any: ['hr-pc-07'] },
+        { w: 'What', label: 'Symptoms: files ending in .locked and a ransom note', any: ['.locked', 'ransom note'] },
+        { w: 'Why', label: 'Cause: email attachment Invoice_Oct.zip', any: ['invoice_oct', 'attachment'] },
+        { w: 'How', label: 'PC isolated from the network at 13:18', check: (d, text) => T('13:18').test(text) && /isolat|unplug|disconnect|switch port/.test(text), hint: 'Isolating the PC first stops the spread. Record when it happened.' },
+        { w: 'What', label: '1,240 files encrypted', any: ['1,240', '1240'] },
+        { w: 'What', label: 'File server not affected', any: ['not affected', 'unaffected', 'no changed', 'no files changed'] },
+        { w: 'What', label: 'Personal data affected (employee 201 files)', check: (d, text) => d.fields.personalData === 'Yes' && /201|employee|personnel/.test(text) },
+        { w: 'Who', label: 'DPO informed (13:45)', check: (d, text) => /\bdpo\b|data protection|\btan\b/.test(text) && T('13:45').test(text) },
+        { w: 'How', label: 'Files restored from backup', any: ['backup'] },
+        { w: 'What', label: 'No ransom paid', any: ['no ransom', 'not paid', 'did not pay', 'never pay', 'not pay'] },
+        { w: 'What', label: 'Severity High or Critical', check: (d) => ['High', 'Critical'].includes(d.fields.severity) }
+      ],
+      model: {
+        title: 'Ransomware on HR-PC-07 after malicious email attachment', occurred: '{date} 13:15', reporter: 'Lea Navarro, HR', contact: 'Local 4120',
+        location: 'Human Resources', affected: 'PC HR-PC-07 (Lea Navarro); shared drive \\\\FS01\\HR checked', category: 'Security', severity: 'High',
+        impact: '1,240 files on HR-PC-07 encrypted, including employee 201 files. Lea could not work until 15:10; this morning’s changes lost.',
+        description: 'Files renamed with .locked and a ransom note asking for Bitcoin, after Lea opened the email attachment Invoice_Oct.zip about 20 minutes earlier.',
+        dataInvolved: 'Employee 201 files (personnel records) with personal data, encrypted on HR-PC-07. File server not affected.', personalData: 'Yes',
+        cause: 'Ransomware from the email attachment Invoice_Oct.zip.',
+        resolution: 'PC isolated, wiped and reinstalled; files restored from last night’s backup (01:30). No ransom paid. Sender domain blocked.',
+        notified: 'IT Manager Engr. Paolo Dizon and DPO Atty. Grace Tan at 13:45 (personal data involved).', resolved: '{date} 15:10', status: 'Resolved',
+        followup: 'DPO to assess whether NPC notification is needed within 72 hours. Phishing training for HR. Check other PCs for the same attachment.',
+        timeline: [
+          ['13:15', 'Call from Lea Navarro (HR, local 4120): files end in .locked, ransom note; opened Invoice_Oct.zip about 20 minutes ago.'],
+          ['13:18', 'Isolated HR-PC-07: network cable unplugged, switch port disabled. PC left on.'],
+          ['13:30', 'Endpoint console: ransomware, 1,240 files encrypted; FS01\\HR not affected (no changed files).'],
+          ['13:45', 'Reported to IT Manager and DPO: employee 201 files with personal data affected.'],
+          ['14:30', 'Wiped and reinstalled HR-PC-07; restored files from backup (01:30). No ransom paid.'],
+          ['15:10', 'Lea confirmed files restored; morning changes lost. Blocked sender domain.']
+        ]
+      }
+    },
+    {
+      id: 'raid-degraded', set: 'class', template: 'maintenance', level: 'Easy', minutes: 10,
+      title: 'Server disk is failing',
+      summary: 'The morning check shows a failed disk in a database server. It is still running, for now.',
+      role: 'You are doing the daily morning checks as system administrator. Log what you find and every step of the repair.',
+      events: [
+        { t: '07:45', ch: 'Daily check', from: 'Server health dashboard',
+          body: 'Database server DB-02 shows a warning: “RAID 1 array degraded. Physical disk 2 (bay 2) failed.” The server is still running on disk 1.' },
+        { t: '07:55', ch: 'Your investigation', from: 'DB-02 management console',
+          body: 'Disk 2 (serial number WX41A8F3) has been marked Failed since 03:12. Disk 1 is healthy. The server is under warranty until 2027-05.' },
+        { t: '08:10', ch: 'Phone call', from: 'You → Dell support',
+          body: 'You open warranty case 1188-4421. A replacement disk will arrive today before 14:00.' },
+        { t: '08:20', ch: 'Your action', from: 'Backups',
+          body: 'You confirm last night’s backup of DB-02 completed and was verified, in case disk 1 also fails.' },
+        { t: '13:35', ch: 'Your action', from: 'Server room',
+          body: 'The replacement disk arrives. You hot-swap the failed disk in bay 2 without shutting down the server.' },
+        { t: '15:50', ch: 'Monitoring alert', from: 'DB-02',
+          body: 'RAID 1 rebuild completed. Array status: Optimal. There was no downtime.' }
+      ],
+      facts: [
+        { w: 'When', label: 'Date detected', any: ['{date}'] },
+        { w: 'When', label: 'Time detected (07:45)', any: [T('07:45')] },
+        { w: 'Where', label: 'Server: DB-02', any: ['db-02', 'db02'] },
+        { w: 'What', label: 'RAID 1 degraded, disk 2 failed', any: ['degraded'] },
+        { w: 'What', label: 'Failed disk serial number WX41A8F3', any: ['wx41a8f3'], hint: 'The serial number is needed for the warranty claim.' },
+        { w: 'When', label: 'Disk failed at 03:12', any: [T('03:12')] },
+        { w: 'Who', label: 'Warranty case 1188-4421', any: ['1188-4421', '11884421'] },
+        { w: 'How', label: 'Backup verified before the repair', any: ['backup'] },
+        { w: 'How', label: 'Disk hot-swapped at 13:35', any: [T('13:35')] },
+        { w: 'When', label: 'Rebuild completed at 15:50 (Optimal)', any: [T('15:50'), 'optimal'] },
+        { w: 'What', label: 'Impact: no downtime', any: ['no downtime', 'no outage', 'without shutting', 'still running', 'stayed online'] },
+        { w: 'How', label: 'Follow-up recorded', check: (d) => has(d, 'followup') }
+      ],
+      model: {
+        title: 'DB-02 RAID 1 degraded: disk 2 failed and replaced', occurred: '{date} 07:45', reporter: 'Morning health check (system administrator)',
+        location: 'Server room', affected: 'Database server DB-02, disk 2 (bay 2), serial WX41A8F3', category: 'Hardware', severity: 'Medium',
+        description: 'Dashboard warning: “RAID 1 array degraded. Physical disk 2 (bay 2) failed.” Disk 2 failed at 03:12. Server still running on disk 1.',
+        cause: 'Hardware failure of disk 2 (serial WX41A8F3).',
+        resolution: 'Backup verified, failed disk hot-swapped under warranty case 1188-4421, RAID rebuilt. Status Optimal. No downtime.', resolved: '{date} 15:50', status: 'Resolved',
+        followup: 'Return the failed disk to Dell. Add an email alert for RAID status so failures are seen before the morning check.',
+        timeline: [
+          ['07:45', 'Dashboard: DB-02 RAID 1 degraded, disk 2 (bay 2) failed; running on disk 1.'],
+          ['07:55', 'Console: disk 2 serial WX41A8F3 failed since 03:12; disk 1 healthy; warranty until 2027-05.'],
+          ['08:10', 'Opened Dell warranty case 1188-4421; replacement before 14:00.'],
+          ['08:20', 'Confirmed last night’s DB-02 backup completed and verified.'],
+          ['13:35', 'Hot-swapped the failed disk in bay 2; server stayed online.'],
+          ['15:50', 'RAID 1 rebuild completed; status Optimal; no downtime.']
+        ]
+      }
+    },
+    {
+      id: 'offboarding', set: 'class', template: 'request', level: 'Medium', minutes: 12,
+      title: 'Employee resigned: remove access',
+      summary: 'A salesperson leaves today. HR asks IT to remove his access, forward his email and collect his laptop.',
+      role: 'You are a system administrator at Example Corp. Record the offboarding request and every step you take.',
+      events: [
+        { t: '16:00', ch: 'Email', from: 'Liza Reyes · HR Officer · local 1105',
+          body: 'Subject: Offboarding (REQ-2101)\n\nPaolo Aquino, Sales Executive, has resigned. His last day is today, {date}, until 17:00.\n\nPlease:\n• disable his access after 17:00\n• forward his email to his manager, Ms. Joy Castillo, for 30 days\n• collect his laptop LT-0388\n\nApproved by the HR Manager, Ms. Tess Ramos.\n\nLiza' },
+        { t: '17:05', ch: 'Your action', from: 'Active Directory',
+          body: 'You disable the account paquino, remove it from all groups, and move it to the Disabled Users OU.' },
+        { t: '17:10', ch: 'Your action', from: 'Email',
+          body: 'You forward mail for paquino@corp.example.com to jcastillo@corp.example.com until {date+30}, and convert his mailbox to a shared mailbox.' },
+        { t: '17:15', ch: 'Your action', from: 'VPN and applications',
+          body: 'You revoke his VPN certificate and remove his access to the CRM system.' },
+        { t: '17:20', ch: 'Your action', from: 'Asset inventory',
+          body: 'Paolo returns laptop LT-0388 and its charger. You update the inventory: LT-0388 status is Returned, waiting to be wiped.' },
+        { t: '17:30', ch: 'Email', from: 'You → Liza Reyes',
+          body: 'You confirm the offboarding is complete and close the request.' }
+      ],
+      facts: [
+        { w: 'When', label: 'Date of the request', any: ['{date}'] },
+        { w: 'When', label: 'Time received (16:00)', any: [T('16:00')] },
+        { w: 'Who', label: 'Requested by Liza Reyes (HR)', any: ['reyes'] },
+        { w: 'Who', label: 'Employee leaving: Paolo Aquino', any: ['aquino'] },
+        { w: 'What', label: 'Ticket number REQ-2101', any: ['2101'] },
+        { w: 'When', label: 'Last day ends at 17:00', any: [T('17:00')] },
+        { w: 'Who', label: 'Approved by Tess Ramos (HR Manager)', any: ['ramos'] },
+        { w: 'How', label: 'Account paquino disabled (17:05)', all: ['paquino'], any: ['disable'] },
+        { w: 'What', label: 'Email forwarded to manager Joy Castillo', all: ['castillo'], any: ['forward'] },
+        { w: 'When', label: 'Forwarding ends {date+30}', any: ['{date+30}', '30 days'] },
+        { w: 'How', label: 'VPN and CRM access removed', all: ['vpn', 'crm'] },
+        { w: 'What', label: 'Laptop LT-0388 returned', any: ['lt-0388'] },
+        { w: 'When', label: 'Completed at 17:30', any: [T('17:30')] }
+      ],
+      model: {
+        title: 'Offboarding Paolo Aquino, Sales Executive (REQ-2101)', occurred: '{date} 16:00', reporter: 'Liza Reyes, HR Officer', contact: 'Local 1105',
+        location: 'Sales Department', affected: 'Paolo Aquino (account paquino), laptop LT-0388',
+        request: 'Disable access after 17:00 on {date}, forward email to manager Joy Castillo for 30 days, collect laptop LT-0388.',
+        approval: 'Approved by Tess Ramos, HR Manager. Ticket REQ-2101.',
+        resolution: 'Account disabled, email forwarded until {date+30}, VPN and CRM access removed, laptop returned.', resolved: '{date} 17:30', status: 'Closed',
+        followup: 'Wipe LT-0388. Stop email forwarding and review the shared mailbox on {date+30}.',
+        timeline: [
+          ['16:00', 'Request from Liza Reyes (HR), REQ-2101, approved by Tess Ramos: Paolo Aquino leaves today at 17:00.'],
+          ['17:05', 'Disabled account paquino, removed from all groups, moved to Disabled Users OU.'],
+          ['17:10', 'Forwarded paquino@corp.example.com to jcastillo@corp.example.com until {date+30}; converted mailbox to shared.'],
+          ['17:15', 'Revoked VPN certificate and removed CRM access.'],
+          ['17:20', 'Laptop LT-0388 and charger returned; inventory updated: Returned, to be wiped.'],
+          ['17:30', 'Confirmed completion to Liza Reyes; request closed.']
+        ]
+      }
     }
   ];
   const scenarioById = (id) => SCENARIOS.find((s) => s.id === id);
+  // Practice scenarios are for demos and self-study; class scenarios are kept for the class activity.
+  const PRACTICE = SCENARIOS.filter((s) => s.set !== 'class');
+  const CLASS_SET = SCENARIOS.filter((s) => s.set === 'class');
+  const scenarioOptions = (selected) =>
+    '<optgroup label="Class activity">' + CLASS_SET.map((s) => '<option value="' + s.id + '"' + (selected === s.id ? ' selected' : '') + '>' + esc(s.title) + '</option>').join('') + '</optgroup>' +
+    '<optgroup label="Practice">' + PRACTICE.map((s) => '<option value="' + s.id + '"' + (selected === s.id ? ' selected' : '') + '>' + esc(s.title) + '</option>').join('') + '</optgroup>';
 
   /* ---------------------------------------------------------------- storage */
   // Records live in this viewer's private store when the page runs as a Claude
@@ -1011,7 +1325,7 @@ details.md pre { margin: 10px 0 0; padding: 16px; overflow-x: auto; border-radiu
   function render() {
     $$('.tabs a').forEach((a) => {
       const tab = a.dataset.tab;
-      const on = tab === state.view || (tab === 'records' && state.view === 'record') || (tab === 'scenarios' && state.view === 'practice');
+      const on = tab === state.view || (tab === 'records' && state.view === 'record') || (tab === 'scenarios' && (state.view === 'practice' || state.view === 'class'));
       if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
     });
     $('#rec-count').textContent = store.ready ? String(store.records.length) : '…';
@@ -1020,6 +1334,7 @@ details.md pre { margin: 10px 0 0; padding: 16px; overflow-x: auto; border-radiu
     else if (state.view === 'record') app.innerHTML = recordView();
     else if (state.view === 'guide') app.innerHTML = guideView();
     else if (state.view === 'review') app.innerHTML = classView();
+    else if (state.view === 'class') app.innerHTML = classActivityView();
     else app.innerHTML = scenariosView();
     if (state.view === 'review') drawQR();
     syncAuto();
@@ -1035,7 +1350,7 @@ details.md pre { margin: 10px 0 0; padding: 16px; overflow-x: auto; border-radiu
       const ex = $('[data-action="export-all"]'); if (ex) ex.disabled = !store.records.length;
       const rs = $('[data-action="reset-all"]'); if (rs) rs.disabled = !(store.records.length || draft);
     }
-    else if (state.view === 'record' || state.view === 'scenarios') render();
+    else if (state.view === 'record' || state.view === 'scenarios' || state.view === 'class') render();
   }
 
   /* Scenarios */
@@ -1044,6 +1359,28 @@ details.md pre { margin: 10px 0 0; padding: 16px; overflow-x: auto; border-radiu
     if (!done.length) return null;
     return done.reduce((b, r) => (r.check.found / r.check.total) > (b.found / b.total) ? r.check : b, done[0].check);
   }
+  function cardHTML(s) {
+    const t = TEMPLATES[s.template];
+    const best = store.ready ? bestCheck(s.id) : null;
+    return '<article class="card">' +
+      '<div class="card-top"><span class="chip chip-code" title="' + esc(t.label) + '">' + t.prefix + '</span><span class="chip">' + esc(s.level) + '</span><span class="muted">' + s.events.length + ' updates · about ' + s.minutes + ' min</span></div>' +
+      '<h3>' + esc(s.title) + '</h3><p>' + esc(s.summary) + '</p>' +
+      '<p class="muted" style="font-size:13px">Document as: <strong>' + esc(t.label) + '</strong></p>' +
+      '<div class="card-foot">' + (best ? '<span class="done" title="Your best documentation check">' + ICON.check + 'Done · ' + best.found + '/' + best.total + '</span>' : '') +
+      '<span class="spacer"></span><button class="btn btn-primary btn-sm" data-action="start" data-id="' + s.id + '">' + (best ? 'Try again' : 'Start scenario') + '</button></div>' +
+      '</article>';
+  }
+
+  // The page the class link opens: only the class scenarios.
+  function classActivityView() {
+    return '<section class="intro"><div><p class="eyebrow">Class activity</p><h1>Pick a scenario and document it.</h1>' +
+      '<p class="lead">Read each update as it comes in and write it down properly: the date and time, who, what, where, why and how. When you’re done, submit your record so the class can review it together.</p></div>' +
+      '<ol class="steps"><li><span><b>Choose</b> one of the scenarios below.</span></li><li><span><b>Document</b> it, and type your name in <b>Documented by</b>.</span></li><li><span><b>Submit to class</b> when your record is complete.</span></li></ol></section>' +
+      (draft ? '<div class="banner"><p>You have unsaved documentation in progress.</p><div class="btn-row"><button class="btn btn-primary btn-sm" data-action="resume">Resume</button></div></div>' : '') +
+      '<div class="section-head"><h2>Class activity scenarios</h2><span class="muted">' + CLASS_SET.length + ' scenarios</span></div>' +
+      '<div class="grid">' + CLASS_SET.map(cardHTML).join('') + '</div>';
+  }
+
   function scenariosView() {
     const sc = draft && draft.scenarioId ? scenarioById(draft.scenarioId) : null;
     const draftName = draft ? (draft.mode === 'edit' ? 'your edit of ' + draft.editingId : sc ? 'the scenario “' + sc.title + '”' : 'a blank ' + TEMPLATES[draft.template].label) : '';
@@ -1054,24 +1391,16 @@ details.md pre { margin: 10px 0 0; padding: 16px; overflow-x: auto; border-radiu
     } else if (draft) {
       banner = '<div class="banner"><p>You have unsaved documentation for ' + esc(draftName) + '.</p><div class="btn-row"><button class="btn btn-primary btn-sm" data-action="resume">Resume</button></div></div>';
     }
-    const cards = SCENARIOS.map((s) => {
-      const t = TEMPLATES[s.template];
-      const best = store.ready ? bestCheck(s.id) : null;
-      return '<article class="card">' +
-        '<div class="card-top"><span class="chip chip-code" title="' + esc(t.label) + '">' + t.prefix + '</span><span class="chip">' + esc(s.level) + '</span><span class="muted">' + s.events.length + ' updates · about ' + s.minutes + ' min</span></div>' +
-        '<h3>' + esc(s.title) + '</h3><p>' + esc(s.summary) + '</p>' +
-        '<p class="muted" style="font-size:13px">Document as: <strong>' + esc(t.label) + '</strong></p>' +
-        '<div class="card-foot">' + (best ? '<span class="done" title="Your best documentation check">' + ICON.check + 'Done · ' + best.found + '/' + best.total + '</span>' : '') +
-        '<span class="spacer"></span><button class="btn btn-primary btn-sm" data-action="start" data-id="' + s.id + '">' + (best ? 'Try again' : 'Start scenario') + '</button></div>' +
-        '</article>';
-    }).join('');
+    const cards = PRACTICE.map(cardHTML).join('');
     const blanks = Object.keys(TEMPLATES).map((k) => '<button class="btn btn-sm" data-action="blank" data-template="' + k + '">' + esc(TEMPLATES[k].label) + '</button>').join('');
     return '<section class="intro"><div><p class="eyebrow">Documentation practice for system administrators</p><h1>Read the situation. Write it down properly.</h1>' +
       '<p class="lead">Pick a scenario. Updates arrive one at a time, each with its own time stamp. Document them the way a system administrator should, then check your record against the facts that matter.</p></div>' +
       '<ol class="steps"><li><span><b>Read</b> each update as the situation unfolds.</span></li><li><span><b>Document</b> the date, time, who, what, where, why and how.</span></li><li><span><b>Check</b> what you captured, save or submit the record, then compare it with an example answer.</span></li></ol></section>' +
       banner +
-      '<div class="section-head"><h2>Scenarios</h2><span class="muted">' + SCENARIOS.length + ' situations from a system administrator’s day</span></div>' +
+      '<div class="section-head"><h2>Practice scenarios</h2><span class="muted">' + PRACTICE.length + ' situations from a system administrator’s day</span></div>' +
       '<div class="grid">' + cards + '</div>' +
+      '<div class="section-head"><h2>Class activity</h2><span class="muted">' + CLASS_SET.length + ' new scenarios kept for the class, so nobody has seen the answers yet</span></div>' +
+      '<div class="grid">' + CLASS_SET.map(cardHTML).join('') + '</div>' +
       '<section class="blank"><div><h2>Document a real event</h2><p>Start a blank record from a template. The <strong>Now</strong> buttons stamp the current date and time.</p></div><div class="btn-row">' + blanks + '</div></section>';
   }
 
@@ -1339,7 +1668,8 @@ details.md pre { margin: 10px 0 0; padding: 16px; overflow-x: auto; border-radiu
   }
   function classLink() {
     if (!/^https?:$/.test(location.protocol)) return '';
-    return location.origin + location.pathname + (state.cls.share ? '#start-' + state.cls.share : '');
+    const share = state.cls.share;
+    return location.origin + location.pathname + (share === 'random' ? '#start-random' : share ? '#start-' + share : '#class');
   }
   function classStatus() {
     const c = state.cls;
@@ -1357,10 +1687,11 @@ details.md pre { margin: 10px 0 0; padding: 16px; overflow-x: auto; border-radiu
 
   function shareHTML() {
     const link = classLink();
-    const opts = '<option value="">Let them choose a scenario</option>' + SCENARIOS.map((s) => '<option value="' + s.id + '"' + (state.cls.share === s.id ? ' selected' : '') + '>' + esc(s.title) + '</option>').join('');
+    const opts = '<option value="">Let them choose a class scenario</option>' +
+      '<option value="random"' + (state.cls.share === 'random' ? ' selected' : '') + '>Give each person a random class scenario</option>' + scenarioOptions(state.cls.share);
     return '<div class="pane share">' + (link ? '<div class="qr" id="qr" role="img" aria-label="QR code for the class link"></div>' : '') +
       '<div style="min-width:0"><h2>Invite classmates</h2>' +
-      '<label for="share-scenario" style="margin-top:14px">Open this scenario for them</label><select id="share-scenario">' + opts + '</select>' +
+      '<label for="share-scenario" style="margin-top:14px">What the link opens</label><select id="share-scenario">' + opts + '</select>' +
       (link ? '<div class="link-row"><code id="class-link">' + esc(link) + '</code><button class="btn btn-sm" data-action="copy-link">Copy link</button></div>'
         : '<p class="notice">Open this page from its web address (Vercel or GitHub Pages) to get a link and QR code for classmates.</p>') +
       '<ol class="rules"><li>Scan the QR code or open the link.</li><li>Work through the scenario and write the record.</li><li>Type your name in <strong>Documented by</strong>, then click <strong>Submit to class</strong>.</li></ol></div></div>';
@@ -1390,7 +1721,7 @@ details.md pre { margin: 10px 0 0; padding: 16px; overflow-x: auto; border-radiu
         '<button class="btn btn-primary" type="submit"' + (c.loading ? ' disabled' : '') + '>' + (c.loading ? 'Loading…' : 'Load submissions') + '</button></form>' +
         (c.error ? '<p class="notice">' + esc(c.error) + '</p>' : '') + '</div>';
     }
-    const opts = '<option value="">All scenarios</option>' + SCENARIOS.map((s) => '<option value="' + s.id + '"' + (c.scenario === s.id ? ' selected' : '') + '>' + esc(s.title) + '</option>').join('');
+    const opts = '<option value="">All scenarios</option>' + scenarioOptions(c.scenario);
     const sorts = [['newest', 'Newest first'], ['score', 'Highest score'], ['name', 'Name A–Z']].map((o) => '<option value="' + o[0] + '"' + (c.sort === o[0] ? ' selected' : '') + '>' + o[1] + '</option>').join('');
     const clear = c.confirmClear
       ? '<span class="muted">Delete all ' + c.items.length + ' submissions?</span><button class="btn btn-danger btn-sm" data-action="class-clear-confirm">Delete all</button><button class="btn btn-sm" data-action="class-clear-cancel">Cancel</button>'
@@ -1701,9 +2032,12 @@ details.md pre { margin: 10px 0 0; padding: 16px; overflow-x: auto; border-radiu
     if (h === 'records') state.view = 'records';
     else if (h === 'guide') state.view = 'guide';
     else if (h === 'review') state.view = 'review';
-    else if (h.indexOf('start-') === 0 && scenarioById(h.slice(6))) {
+    else if (h === 'class') state.view = 'class';
+    else if (h === 'start-random' || (h.indexOf('start-') === 0 && scenarioById(h.slice(6)))) {
       // Class link: open the scenario straight away (or ask before replacing unsaved work).
-      const id = h.slice(6);
+      // start-random gives each person a random class scenario, so neighbours get different ones.
+      const keep = draft && draft.mode !== 'edit' && CLASS_SET.some((x) => x.id === draft.scenarioId) ? draft.scenarioId : null;
+      const id = h === 'start-random' ? (keep || CLASS_SET[Math.floor(Math.random() * CLASS_SET.length)].id) : h.slice(6);
       if (draft && draft.scenarioId === id && draft.mode !== 'edit') state.view = 'practice';
       else if (draft) { state.pendingStart = { mode: 'scenario', scenarioId: id }; state.view = 'scenarios'; }
       else { draft = newDraft({ mode: 'scenario', scenarioId: id }); persistDraft(); state.view = 'practice'; }
