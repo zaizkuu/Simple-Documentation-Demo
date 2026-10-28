@@ -450,8 +450,8 @@ details.md pre { margin: 10px 0 0; padding: 16px; overflow-x: auto; border-radiu
 
   /* Class submissions are stored in Supabase (see supabase/schema.sql). The anon / publishable key is meant
      to be public: row-level security lets visitors only add submissions, and reading them needs the review code. */
-  const SUPABASE_URL = '';
-  const SUPABASE_KEY = '';
+  const SUPABASE_URL = 'https://ubakmdedrjpjurfiutru.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InViYWttZGVkcmpwanVyZml1dHJ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMxNjc2MjMsImV4cCI6MjEwODc0MzYyM30.qEFmQHtrZZUq42lyXmvTRSJB2Xk72IRwMlF_ZcmAruA';
   const IN_ARTIFACT = !!(window.claude && typeof window.claude.use === 'function');
   const CLASS_READY = !!(SUPABASE_URL && SUPABASE_KEY) && !IN_ARTIFACT;
 
@@ -463,9 +463,11 @@ details.md pre { margin: 10px 0 0; padding: 16px; overflow-x: auto; border-radiu
     const text = await res.text();
     let data = null;
     try { data = text ? JSON.parse(text) : null; } catch (e) { data = null; }
-    if (!res.ok) { const err = new Error((data && (data.message || data.hint)) || 'HTTP ' + res.status); err.status = res.status; throw err; }
+    if (!res.ok) { const err = new Error((data && (data.message || data.hint)) || 'HTTP ' + res.status); err.status = res.status; err.code = data && data.code; throw err; }
     return data;
   }
+  // PostgREST answers PGRST202 / PGRST205 when the function or table from supabase/schema.sql doesn't exist.
+  const notSetUp = (e) => !!e && (e.code === 'PGRST202' || e.code === 'PGRST205');
   const classApi = {
     submit: (row) => sbPost('/rest/v1/submissions', row, 'return=minimal'),
     list: (code) => sbPost('/rest/v1/rpc/list_submissions', { review_code: code }),
@@ -1480,7 +1482,9 @@ details.md pre { margin: 10px 0 0; padding: 16px; overflow-x: auto; border-radiu
     } catch (e) {
       wrong = /review code/i.test(e.message);
       if (wrong) { c.items = null; c.auto = false; c.openId = null; LS.del(KEY_REVIEW_CODE); }
-      c.error = wrong ? 'That review code is not correct.' : 'Could not load submissions (' + e.message + '). Check your internet connection and try again.';
+      c.error = wrong ? 'That review code is not correct.'
+        : notSetUp(e) ? 'The class database isn’t set up yet. Run supabase/schema.sql in the Supabase SQL Editor, then try again.'
+        : 'Could not load submissions (' + e.message + '). Check your internet connection and try again.';
     }
     c.loading = false;
     if (state.view !== 'review') return;
@@ -1500,6 +1504,7 @@ details.md pre { margin: 10px 0 0; padding: 16px; overflow-x: auto; border-radiu
   }
 
   function submitError(e) {
+    if (notSetUp(e)) return 'Class submissions aren’t set up yet. Your record is still here; tell your presenter.';
     return 'Could not submit' + (e && e.status ? ' (' + e.message + ')' : '. Check your internet connection') + '. Your work is still here; try again.';
   }
   async function submitRecord(rec) {
