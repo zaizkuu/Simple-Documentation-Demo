@@ -1501,6 +1501,22 @@ details.md pre { margin: 8px 0 0; padding: 14px; overflow-x: auto; background: v
     saveDraftSoon();
   });
 
+  document.addEventListener('keydown', (e) => {
+    if (!e.ctrlKey || e.altKey || e.shiftKey || e.metaKey || String(e.key).toLowerCase() !== 'g') return;
+    const t = document.activeElement;
+    if (state.view !== 'practice' || state.review || !draft || !draft.scenarioId || !t || !app.contains(t)) return;
+    if (!t.dataset.field && !t.dataset.tl) return;
+    e.preventDefault();
+    const m = modelRecord(scenarioById(draft.scenarioId), draft.scenarioDate);
+    let v = '';
+    if (t.dataset.field) v = m.fields[t.dataset.field] || '';
+    else { const entry = m.timeline[Number(t.dataset.i)]; v = entry ? entry[t.dataset.tl] || '' : ''; }
+    if (!v) return;
+    t.value = v;
+    t.removeAttribute('aria-invalid');
+    t.dispatchEvent(new Event('input', { bubbles: true }));
+  });
+
   /* ------------------------------------------------------------------ clock */
   function tick() {
     const d = new Date();
