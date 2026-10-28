@@ -39,6 +39,7 @@
   --font-mono: "DM Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   --r-lg: 24px;
   --r: 14px;
+  --qr-bg: #ffffff;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
@@ -326,6 +327,25 @@ details.md pre { margin: 10px 0 0; padding: 16px; overflow-x: auto; border-radiu
 .toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); z-index: 40; max-width: min(560px, calc(100vw - 32px)); transform: translate(-50%, 16px); opacity: 0; pointer-events: none; padding: 13px 20px; border-radius: 16px; background: var(--bg); color: var(--ink); font-size: 14px; font-weight: 600; box-shadow: var(--raise); transition: opacity .18s, transform .18s; }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 
+/* Class review */
+.share { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 26px; align-items: center; margin-bottom: 26px; }
+.qr { width: 196px; height: 196px; padding: 14px; border-radius: 20px; background: var(--qr-bg); box-shadow: var(--raise); display: grid; place-items: center; }
+.qr img, .qr canvas { display: block; width: 168px; height: 168px; }
+.link-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 14px; }
+.link-row code { flex: 1 1 240px; min-width: 0; padding: 10px 14px; border-radius: 12px; box-shadow: var(--inset-sm); font: 13px/1.4 var(--font-mono); overflow-wrap: anywhere; }
+.code-form { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+.code-form input { flex: 1 1 220px; width: auto; }
+.sub-head { display: flex; align-items: center; gap: 12px 16px; flex-wrap: wrap; }
+.sub-meta { display: flex; gap: 6px 20px; flex-wrap: wrap; color: var(--muted); font-size: 14px; margin-top: 8px; }
+.mini-meter { display: inline-block; width: 64px; height: 8px; margin-left: 10px; vertical-align: middle; border-radius: 99px; box-shadow: var(--inset-sm); padding: 1px; }
+.mini-meter span { display: block; height: 100%; border-radius: 99px; background: var(--accent-fill); }
+.toggle { display: inline-flex; align-items: center; gap: 8px; margin: 0; font-size: 13.5px; font-weight: 600; color: var(--muted); cursor: pointer; }
+.toggle input { width: 18px; height: 18px; accent-color: var(--accent-fill); }
+.chip-sent { color: var(--ok); }
+.records tbody tr[data-sub] { cursor: pointer; }
+.records tbody tr[data-sub]:hover td { background: var(--hover); }
+@media (max-width: 700px) { .share { grid-template-columns: minmax(0, 1fr); } .qr { margin: 0 auto; } }
+
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 </style>
 <!-- app:head-end -->
@@ -341,6 +361,7 @@ details.md pre { margin: 10px 0 0; padding: 16px; overflow-x: auto; border-radiu
     <nav class="tabs" aria-label="Sections">
       <a href="#scenarios" data-tab="scenarios">Scenarios</a>
       <a href="#records" data-tab="records">Records <span class="count" id="rec-count">0</span></a>
+      <a href="#review" data-tab="review"><span class="hide-sm">Class review</span><span class="show-sm">Class</span></a>
       <a href="#guide" data-tab="guide"><span class="hide-sm">How to document</span><span class="show-sm">Guide</span></a>
     </nav>
     <div class="clock" aria-label="Current date and time"><span id="clock-date"></span><strong id="clock-time"></strong><span id="clock-tz"></span></div>
@@ -425,7 +446,40 @@ details.md pre { margin: 10px 0 0; padding: 16px; overflow-x: auto; border-radiu
     set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* storage blocked */ } },
     del(k) { try { localStorage.removeItem(k); } catch (e) { /* storage blocked */ } }
   };
-  const KEY_RECORDS = 'doclab.records.v1', KEY_DRAFT = 'doclab.draft.v1', KEY_AUTHOR = 'doclab.author';
+  const KEY_RECORDS = 'doclab.records.v1', KEY_DRAFT = 'doclab.draft.v1', KEY_AUTHOR = 'doclab.author', KEY_REVIEW_CODE = 'doclab.reviewCode';
+
+  /* Class submissions are stored in Supabase (see supabase/schema.sql). The anon / publishable key is meant
+     to be public: row-level security lets visitors only add submissions, and reading them needs the review code. */
+  const SUPABASE_URL = '';
+  const SUPABASE_KEY = '';
+  const IN_ARTIFACT = !!(window.claude && typeof window.claude.use === 'function');
+  const CLASS_READY = !!(SUPABASE_URL && SUPABASE_KEY) && !IN_ARTIFACT;
+
+  async function sbPost(path, body, prefer) {
+    const headers = { apikey: SUPABASE_KEY, 'Content-Type': 'application/json' };
+    if (/^eyJ/.test(SUPABASE_KEY)) headers.Authorization = 'Bearer ' + SUPABASE_KEY;
+    if (prefer) headers.Prefer = prefer;
+    const res = await fetch(SUPABASE_URL.replace(/\/+$/, '') + path, { method: 'POST', headers, body: JSON.stringify(body) });
+    const text = await res.text();
+    let data = null;
+    try { data = text ? JSON.parse(text) : null; } catch (e) { data = null; }
+    if (!res.ok) { const err = new Error((data && (data.message || data.hint)) || 'HTTP ' + res.status); err.status = res.status; throw err; }
+    return data;
+  }
+  const classApi = {
+    submit: (row) => sbPost('/rest/v1/submissions', row, 'return=minimal'),
+    list: (code) => sbPost('/rest/v1/rpc/list_submissions', { review_code: code }),
+    remove: (code, id) => sbPost('/rest/v1/rpc/delete_submission', { review_code: code, submission_id: id }),
+    clear: (code) => sbPost('/rest/v1/rpc/clear_submissions', { review_code: code })
+  };
+  // crypto.randomUUID needs HTTPS; getRandomValues works on plain HTTP too.
+  function uuid() {
+    if (window.crypto && crypto.randomUUID && window.isSecureContext) return crypto.randomUUID();
+    const b = crypto.getRandomValues(new Uint8Array(16));
+    b[6] = (b[6] & 15) | 64; b[8] = (b[8] & 63) | 128;
+    const h = Array.from(b, (x) => x.toString(16).padStart(2, '0')).join('');
+    return h.slice(0, 8) + '-' + h.slice(8, 12) + '-' + h.slice(12, 16) + '-' + h.slice(16, 20) + '-' + h.slice(20);
+  }
 
   /* --------------------------------------------------------- record templates */
   const FIELDS = {
@@ -929,6 +983,10 @@ details.md pre { margin: 10px 0 0; padding: 16px; overflow-x: auto; border-radiu
     if (/\b(password|passwd|pwd)\s*(is|:|=)\s*\S+/i.test(text)) bad('It looks like a password was written down. Never record passwords in documentation.');
     return { facts, found, total: facts.length, checks, unrevealed: sc ? sc.events.length - d.revealed : 0 };
   }
+  const asDraft = (rec) => {
+    const sc = scenarioById(rec.scenarioId);
+    return { scenarioId: rec.scenarioId, template: rec.template, scenarioDate: rec.scenarioDate, revealed: sc ? sc.events.length : 0, fields: rec.fields || {}, timeline: rec.timeline || [], author: rec.author || '' };
+  };
   const verdict = (pct) => pct >= 90 ? 'Excellent record' : pct >= 70 ? 'Good, with a few details missing' : pct >= 50 ? 'Needs more detail' : 'Important facts are missing';
 
   function modelRecord(sc, date) {
@@ -939,7 +997,11 @@ details.md pre { margin: 10px 0 0; padding: 16px; overflow-x: auto; border-radiu
 
   /* -------------------------------------------------------------- rendering */
   const app = $('#app');
-  const state = { view: 'scenarios', recordId: null, review: null, showExample: false, pendingStart: null, confirmDelete: false, filters: { q: '', type: '', status: '' } };
+  const state = {
+    view: 'scenarios', recordId: null, review: null, showExample: false, pendingStart: null, confirmDelete: false, confirmReset: false,
+    filters: { q: '', type: '', status: '' },
+    cls: { items: null, loading: false, error: '', openId: null, order: [], scenario: '', sort: 'newest', auto: false, updated: null, share: '', confirmClear: false, confirmDel: false }
+  };
 
   const sevChip = (v) => v ? '<span class="chip sev-' + slug(v) + '">' + esc(v) + '</span>' : '';
   const stChip = (v) => v ? '<span class="chip st-' + slug(v) + '">' + esc(v) + '</span>' : '';
@@ -955,7 +1017,10 @@ details.md pre { margin: 10px 0 0; padding: 16px; overflow-x: auto; border-radiu
     else if (state.view === 'records') app.innerHTML = recordsView();
     else if (state.view === 'record') app.innerHTML = recordView();
     else if (state.view === 'guide') app.innerHTML = guideView();
+    else if (state.view === 'review') app.innerHTML = classView();
     else app.innerHTML = scenariosView();
+    if (state.view === 'review') drawQR();
+    syncAuto();
   }
 
   function changed() {
@@ -1001,7 +1066,7 @@ details.md pre { margin: 10px 0 0; padding: 16px; overflow-x: auto; border-radiu
     const blanks = Object.keys(TEMPLATES).map((k) => '<button class="btn btn-sm" data-action="blank" data-template="' + k + '">' + esc(TEMPLATES[k].label) + '</button>').join('');
     return '<section class="intro"><div><p class="eyebrow">Documentation practice for system administrators</p><h1>Read the situation. Write it down properly.</h1>' +
       '<p class="lead">Pick a scenario. Updates arrive one at a time, each with its own time stamp. Document them the way a system administrator should, then check your record against the facts that matter.</p></div>' +
-      '<ol class="steps"><li><span><b>Read</b> each update as the situation unfolds.</span></li><li><span><b>Document</b> the date, time, who, what, where, why and how.</span></li><li><span><b>Check</b> what you captured, compare with an example, and save the record.</span></li></ol></section>' +
+      '<ol class="steps"><li><span><b>Read</b> each update as the situation unfolds.</span></li><li><span><b>Document</b> the date, time, who, what, where, why and how.</span></li><li><span><b>Check</b> what you captured, save or submit the record, then compare it with an example answer.</span></li></ol></section>' +
       banner +
       '<div class="section-head"><h2>Scenarios</h2><span class="muted">' + SCENARIOS.length + ' situations from a system administrator’s day</span></div>' +
       '<div class="grid">' + cards + '</div>' +
@@ -1079,12 +1144,11 @@ details.md pre { margin: 10px 0 0; padding: 16px; overflow-x: auto; border-radiu
     return '<form id="docform" class="stack" novalidate>' + groups +
       '<div class="formbar"><span class="draft-status" id="draft-status">Your draft saves automatically</span><span class="spacer"></span>' +
       '<button type="button" class="btn btn-ghost" data-action="discard">' + (draft.mode === 'edit' ? 'Cancel edit' : 'Discard') + '</button>' + checkBtn +
-      '<button type="button" class="btn btn-primary" data-action="save">' + (draft.mode === 'edit' ? 'Save changes' : 'Save record') + '</button></div></form>';
+      '<button type="button" class="btn' + (CLASS_READY ? '' : ' btn-primary') + '" data-action="save">' + (draft.mode === 'edit' ? 'Save<span class="hide-sm"> changes</span>' : 'Save<span class="hide-sm"> record</span>') + '</button>' +
+      (CLASS_READY ? '<button type="button" class="btn btn-primary" data-action="submit">Submit<span class="hide-sm"> to class</span></button>' : '') + '</div></form>';
   }
 
-  function reviewHTML() {
-    const ev = state.review;
-    const sc = scenarioById(draft.scenarioId);
+  function scoreHTML(ev) {
     const pct = ev.total ? Math.round(ev.found / ev.total * 100) : 0;
     const tiles = W5H.map((w) => {
       const all = ev.facts.filter((f) => f.w === w);
@@ -1092,17 +1156,26 @@ details.md pre { margin: 10px 0 0; padding: 16px; overflow-x: auto; border-radiu
       const got = all.filter((f) => f.ok).length;
       return '<div class="w-tile' + (got === all.length ? ' full' : got === 0 ? ' none' : '') + '"><span>' + w + '</span><b>' + got + '/' + all.length + '</b></div>';
     }).join('');
+    return '<div class="score"><div class="score-num">' + ev.found + '<span>/' + ev.total + '</span></div><div class="score-text"><strong>' + verdict(pct) + '</strong><p class="muted">key facts captured (' + pct + '%)</p><div class="meter" role="img" aria-label="' + pct + ' percent"><span style="width:' + pct + '%"></span></div></div></div>' +
+      '<div class="w-grid">' + tiles + '</div>';
+  }
+  function factsHTML(ev) {
     const mark = (lvl) => '<span class="mark">' + (lvl === 'ok' ? ICON.check : lvl === 'bad' ? ICON.x : ICON.warn) + '</span>';
     const facts = ev.facts.map((f) => '<li class="lvl-' + (f.ok ? 'ok' : 'bad') + '">' + mark(f.ok ? 'ok' : 'bad') + '<div><span class="fact-w">' + f.w + '</span>' + esc(f.label) + (!f.ok && f.hint ? '<p class="hint">' + esc(f.hint) + '</p>' : '') + '</div></li>').join('');
     const checks = ev.checks.map((c) => '<li class="lvl-' + c.lvl + '">' + mark(c.lvl) + '<div>' + esc(c.text) + '</div></li>').join('');
+    return '<div class="pane"><h3>Key facts</h3><ul class="checklist">' + facts + '</ul><p class="help" style="margin-top:10px">The check looks for names, numbers, times and keywords anywhere in the record. Use it as a guide, not a grade.</p></div>' +
+      '<div class="pane"><h3>Documentation standards</h3><ul class="checklist">' + checks + '</ul></div>';
+  }
+
+  function reviewHTML() {
+    const ev = state.review;
     const unrevealed = ev.unrevealed > 0 ? '<p class="notice">You haven’t read ' + ev.unrevealed + (ev.unrevealed === 1 ? ' update' : ' updates') + ' yet. Facts in unread updates count as missing.</p>' : '';
-    const example = state.showExample ? '<div class="stack"><p class="eyebrow">Example documentation for this scenario</p>' + docHTML(modelRecord(sc, draft.scenarioDate), { example: true }) + '</div>' : '';
-    return '<div class="pane"><p class="eyebrow">Documentation check</p><div class="score"><div class="score-num">' + ev.found + '<span>/' + ev.total + '</span></div><div class="score-text"><strong>' + verdict(pct) + '</strong><p class="muted">key facts captured (' + pct + '%)</p><div class="meter" role="img" aria-label="' + pct + ' percent"><span style="width:' + pct + '%"></span></div></div></div>' +
-      '<div class="w-grid">' + tiles + '</div>' + unrevealed + '</div>' +
-      '<div class="pane"><h3>Key facts</h3><ul class="checklist">' + facts + '</ul><p class="help" style="margin-top:10px">The check looks for names, numbers, times and keywords anywhere in your record. Use it as a guide, not a grade.</p></div>' +
-      '<div class="pane"><h3>Documentation standards</h3><ul class="checklist">' + checks + '</ul></div>' +
-      '<div class="formbar"><button type="button" class="btn" data-action="back">← Back to editing</button><button type="button" class="btn" data-action="toggle-example">' + (state.showExample ? 'Hide example' : 'Show example documentation') + '</button><span class="spacer"></span><button type="button" class="btn btn-primary" data-action="save">Save record</button></div>' +
-      example;
+    return '<div class="pane"><p class="eyebrow">Documentation check</p>' + scoreHTML(ev) + unrevealed +
+      '<p class="help" style="margin-top:16px">The example answer opens after you ' + (CLASS_READY ? 'save or submit' : 'save') + ' your record.</p></div>' +
+      factsHTML(ev) +
+      '<div class="formbar"><button type="button" class="btn" data-action="back">← Back<span class="hide-sm"> to editing</span></button><span class="spacer"></span>' +
+      '<button type="button" class="btn' + (CLASS_READY ? '' : ' btn-primary') + '" data-action="save">Save<span class="hide-sm"> record</span></button>' +
+      (CLASS_READY ? '<button type="button" class="btn btn-primary" data-action="submit">Submit<span class="hide-sm"> to class</span></button>' : '') + '</div>';
   }
 
   /* Document (record view, example answer) */
@@ -1206,7 +1279,7 @@ details.md pre { margin: 10px 0 0; padding: 16px; overflow-x: auto; border-radiu
     return '<div class="table-wrap"><table class="records"><thead><tr><th>Record ID</th><th>Title</th><th>Type</th><th>Severity</th><th>Status</th><th>Occurred</th><th>Documented by</th><th>Check</th></tr></thead><tbody>' +
       list.map((r) => {
         const f = r.fields || {};
-        return '<tr data-open="' + esc(r.id) + '"><td class="mono nowrap">' + esc(r.id) + '</td><td><a href="#record-' + encodeURIComponent(r.id) + '">' + esc(f.title || 'Untitled') + '</a>' + (r.example ? ' <span class="chip chip-example">Example</span>' : '') + '</td>' +
+        return '<tr data-open="' + esc(r.id) + '"><td class="mono nowrap">' + esc(r.id) + '</td><td><a href="#record-' + encodeURIComponent(r.id) + '">' + esc(f.title || 'Untitled') + '</a>' + (r.example ? ' <span class="chip chip-example">Example</span>' : '') + (r.submittedAt ? ' <span class="chip chip-sent">Submitted</span>' : '') + '</td>' +
           '<td class="nowrap">' + esc(TEMPLATES[r.template].label) + '</td><td>' + sevChip(f.severity) + '</td><td>' + stChip(f.status) + '</td>' +
           '<td class="mono nowrap">' + esc(fmtDT(f.occurred)) + '</td><td>' + esc(r.author || '') + '</td>' +
           '<td class="mono nowrap">' + (r.check ? r.check.found + '/' + r.check.total : '—') + '</td></tr>';
@@ -1237,11 +1310,210 @@ details.md pre { margin: 10px 0 0; padding: 16px; overflow-x: auto; border-radiu
     const del = state.confirmDelete
       ? '<span class="muted">Delete ' + esc(rec.id) + ' permanently?</span><button class="btn btn-danger btn-sm" data-action="confirm-delete">Delete</button><button class="btn btn-ghost btn-sm" data-action="cancel-delete">Keep</button>'
       : '<button class="btn btn-ghost btn-sm" data-action="delete">' + ICON.trash + 'Delete</button>';
-    const check = rec.check ? '<div class="pane check-summary"><span class="eyebrow">Documentation check</span><strong class="mono">' + rec.check.found + '/' + rec.check.total + ' key facts</strong><span class="muted">' + (sc ? 'Scenario: ' + esc(sc.title) : '') + '</span></div>' : '';
-    return '<div class="record-bar"><a class="btn btn-ghost btn-sm" href="#records">← All records</a><span class="spacer"></span>' +
+    const sent = rec.submittedAt ? '<span class="chip chip-sent">Submitted to class · ' + esc(fmtStamp(rec.submittedAt)) + '</span>' : '';
+    const check = rec.check || sent ? '<div class="pane check-summary">' + (rec.check ? '<span class="eyebrow">Documentation check</span><strong class="mono">' + rec.check.found + '/' + rec.check.total + ' key facts</strong><span class="muted">' + (sc ? 'Scenario: ' + esc(sc.title) : '') + '</span>' : '') + '<span class="spacer"></span>' + sent + '</div>' : '';
+    const submit = CLASS_READY ? '<button class="btn btn-primary btn-sm" data-action="submit-record">' + (rec.submittedAt ? 'Submit again' : 'Submit to class') + '</button>' : '';
+    const example = sc ? '<div class="record-bar" style="margin-top:26px"><button class="btn" data-action="toggle-example">' + (state.showExample ? 'Hide example answer' : 'Compare with example answer') + '</button></div>' +
+      (state.showExample ? docHTML(modelRecord(sc, rec.scenarioDate), { example: true }) : '') : '';
+    return '<div class="record-bar"><a class="btn btn-ghost btn-sm" href="#records">← All records</a><span class="spacer"></span>' + submit +
       '<button class="btn btn-sm" data-action="edit">Edit</button><button class="btn btn-sm" data-action="copy-md">Copy as Markdown</button><button class="btn btn-sm" data-action="download-md">Download .md</button>' + del + '</div>' +
-      check + docHTML(rec) +
+      check + docHTML(rec) + example +
       '<details class="md"><summary>Markdown version</summary><pre id="md-text">' + esc(toMarkdown(rec)) + '</pre></details>';
+  }
+
+  /* Class review */
+  const clsItem = (id) => (state.cls.items || []).find((it) => it.id === id);
+  function classScore(it) {
+    if (it._ev === undefined) it._ev = scenarioById(it.record.scenarioId) ? evaluate(asDraft(it.record)) : null;
+    return it._ev;
+  }
+  function classOrder() {
+    const c = state.cls;
+    const pct = (it) => { const ev = classScore(it); return ev && ev.total ? ev.found / ev.total : -1; };
+    return (c.items || [])
+      .filter((it) => !c.scenario || it.record.scenarioId === c.scenario)
+      .sort((a, b) => c.sort === 'score' ? pct(b) - pct(a) : c.sort === 'name' ? String(a.name).localeCompare(String(b.name)) : String(b.created_at).localeCompare(String(a.created_at)))
+      .map((it) => it.id);
+  }
+  function classLink() {
+    if (!/^https?:$/.test(location.protocol)) return '';
+    return location.origin + location.pathname + (state.cls.share ? '#start-' + state.cls.share : '');
+  }
+  function classStatus() {
+    const c = state.cls;
+    const n = c.items ? c.items.length : 0;
+    return n + (n === 1 ? ' submission' : ' submissions') + (c.updated ? ' · updated ' + c.updated.toTimeString().slice(0, 8) : '');
+  }
+
+  function classView() {
+    const head = '<div class="page-head"><div><p class="eyebrow">Class review</p><h1>Class submissions</h1><p class="lead">Classmates work through a scenario and click <strong>Submit to class</strong>. Review their records here, one at a time, on the projector.</p></div></div>';
+    if (IN_ARTIFACT) return head + '<div class="pane"><h2>Open the class website to use this</h2><p class="muted" style="margin-top:8px">Class submissions work on the public website (Vercel or GitHub Pages), not on this Claude link.</p></div>';
+    if (!CLASS_READY) return head + '<div class="pane"><h2>Not connected yet</h2><p class="muted" style="margin-top:8px">Class submissions need the Supabase database. After it is set up with <span class="mono">supabase/schema.sql</span>, its project URL and public key go into <span class="mono">SUPABASE_URL</span> and <span class="mono">SUPABASE_KEY</span> at the top of the script in <span class="mono">index.html</span>.</p></div>';
+    if (state.cls.openId && clsItem(state.cls.openId)) return classDetailView();
+    return head + shareHTML() + classListHTML();
+  }
+
+  function shareHTML() {
+    const link = classLink();
+    const opts = '<option value="">Let them choose a scenario</option>' + SCENARIOS.map((s) => '<option value="' + s.id + '"' + (state.cls.share === s.id ? ' selected' : '') + '>' + esc(s.title) + '</option>').join('');
+    return '<div class="pane share">' + (link ? '<div class="qr" id="qr" role="img" aria-label="QR code for the class link"></div>' : '') +
+      '<div style="min-width:0"><h2>Invite classmates</h2>' +
+      '<label for="share-scenario" style="margin-top:14px">Open this scenario for them</label><select id="share-scenario">' + opts + '</select>' +
+      (link ? '<div class="link-row"><code id="class-link">' + esc(link) + '</code><button class="btn btn-sm" data-action="copy-link">Copy link</button></div>'
+        : '<p class="notice">Open this page from its web address (Vercel or GitHub Pages) to get a link and QR code for classmates.</p>') +
+      '<ol class="rules"><li>Scan the QR code or open the link.</li><li>Work through the scenario and write the record.</li><li>Type your name in <strong>Documented by</strong>, then click <strong>Submit to class</strong>.</li></ol></div></div>';
+  }
+
+  function classRowsHTML() {
+    const c = state.cls;
+    if (!c.items.length) return '<div class="empty"><h2>No submissions yet</h2><p>Share the link or QR code above. Submissions appear here as classmates send them.</p></div>';
+    const order = classOrder();
+    if (!order.length) return '<div class="empty"><p>No submissions for this scenario yet.</p></div>';
+    return '<div class="table-wrap"><table class="records"><thead><tr><th>#</th><th>Name</th><th>Scenario</th><th>Key facts</th><th>Checks used</th><th>Submitted</th></tr></thead><tbody>' +
+      order.map((id, n) => {
+        const it = clsItem(id);
+        const ev = classScore(it);
+        const pct = ev && ev.total ? Math.round(ev.found / ev.total * 100) : 0;
+        return '<tr data-sub="' + esc(id) + '"><td class="mono">' + (n + 1) + '</td><td><a href="#review" data-action="class-open" data-id="' + esc(id) + '">' + esc(it.name || 'Unnamed') + '</a></td>' +
+          '<td>' + esc(it.scenario_title || '') + '</td><td class="mono nowrap">' + (ev ? ev.found + '/' + ev.total + '<span class="mini-meter"><span style="width:' + pct + '%"></span></span>' : '—') + '</td>' +
+          '<td class="mono">' + (Number(it.checks_used) || 0) + '</td><td class="mono nowrap">' + esc(fmtStamp(it.created_at)) + '</td></tr>';
+      }).join('') + '</tbody></table></div>';
+  }
+
+  function classListHTML() {
+    const c = state.cls;
+    if (!c.items) {
+      return '<div class="pane"><h2>Review submissions</h2><p class="muted" style="margin-top:6px">Enter your review code. Classmates don’t need it, and they can’t see each other’s work.</p>' +
+        '<form class="code-form" data-form="class-code"><input type="password" id="rv-code" value="' + esc(LS.get(KEY_REVIEW_CODE) || '') + '" placeholder="Review code" autocomplete="current-password" aria-label="Review code">' +
+        '<button class="btn btn-primary" type="submit"' + (c.loading ? ' disabled' : '') + '>' + (c.loading ? 'Loading…' : 'Load submissions') + '</button></form>' +
+        (c.error ? '<p class="notice">' + esc(c.error) + '</p>' : '') + '</div>';
+    }
+    const opts = '<option value="">All scenarios</option>' + SCENARIOS.map((s) => '<option value="' + s.id + '"' + (c.scenario === s.id ? ' selected' : '') + '>' + esc(s.title) + '</option>').join('');
+    const sorts = [['newest', 'Newest first'], ['score', 'Highest score'], ['name', 'Name A–Z']].map((o) => '<option value="' + o[0] + '"' + (c.sort === o[0] ? ' selected' : '') + '>' + o[1] + '</option>').join('');
+    const clear = c.confirmClear
+      ? '<span class="muted">Delete all ' + c.items.length + ' submissions?</span><button class="btn btn-danger btn-sm" data-action="class-clear-confirm">Delete all</button><button class="btn btn-sm" data-action="class-clear-cancel">Cancel</button>'
+      : '<button class="btn btn-ghost btn-sm" data-action="class-clear"' + (c.items.length ? '' : ' disabled') + '>Delete all</button>';
+    return '<div class="pane"><div class="sub-head"><div><h2>Submissions</h2><p class="muted" id="class-status" style="margin-top:4px">' + esc(classStatus()) + '</p></div><span class="spacer"></span>' +
+      '<label class="toggle"><input type="checkbox" id="class-auto"' + (c.auto ? ' checked' : '') + '>Auto-refresh</label>' +
+      '<button class="btn btn-sm" data-action="class-refresh"' + (c.loading ? ' disabled' : '') + '>Refresh</button>' + clear + '</div>' +
+      '<div class="toolbar" style="margin:18px 0 16px"><select id="class-scenario" aria-label="Filter by scenario">' + opts + '</select><select id="class-sort" aria-label="Sort submissions">' + sorts + '</select>' +
+      '<span class="spacer"></span><button class="btn btn-ghost btn-sm" data-action="class-lock" title="Forget the review code on this device">Lock</button></div>' +
+      '<div id="class-rows">' + classRowsHTML() + '</div>' + (c.error ? '<p class="notice">' + esc(c.error) + '</p>' : '') + '</div>';
+  }
+
+  function classDetailView() {
+    const c = state.cls;
+    const order = c.order.length ? c.order : classOrder();
+    const pos = order.indexOf(c.openId);
+    const it = clsItem(c.openId);
+    const rec = it.record;
+    const sc = scenarioById(rec.scenarioId);
+    const ev = classScore(it);
+    const used = Number(it.checks_used) || 0;
+    const del = c.confirmDel
+      ? '<span class="muted">Delete this submission?</span><button class="btn btn-danger btn-sm" data-action="class-del-confirm">Delete</button><button class="btn btn-sm" data-action="class-del-cancel">Keep</button>'
+      : '<button class="btn btn-ghost btn-sm" data-action="class-del">' + ICON.trash + 'Delete</button>';
+    return '<div class="record-bar"><button class="btn btn-ghost btn-sm" data-action="class-back">← All submissions</button><span class="spacer"></span>' +
+      '<button class="btn btn-sm" data-action="class-prev"' + (pos <= 0 ? ' disabled' : '') + '>← Previous</button><span class="mono muted">' + (pos + 1) + ' of ' + order.length + '</span>' +
+      '<button class="btn btn-sm" data-action="class-next"' + (pos < 0 || pos >= order.length - 1 ? ' disabled' : '') + '>Next →</button>' + del + '</div>' +
+      '<div class="pane" style="margin-bottom:26px"><p class="eyebrow">Submission</p><h1 style="margin-top:4px">' + esc(it.name || 'Unnamed') + '</h1>' +
+      '<div class="sub-meta"><span>' + esc(it.scenario_title || '') + '</span><span class="mono">Submitted ' + esc(fmtStamp(it.created_at)) + '</span><span>Used the check ' + used + (used === 1 ? ' time' : ' times') + '</span></div>' +
+      (ev ? scoreHTML(ev) : '') + '</div>' +
+      (ev ? '<div class="stack" style="margin-bottom:26px">' + factsHTML(ev) + '</div>' : '') +
+      docHTML(rec) +
+      (sc ? '<div class="record-bar" style="margin-top:26px"><button class="btn" data-action="toggle-example">' + (state.showExample ? 'Hide example answer' : 'Compare with example answer') + '</button></div>' +
+        (state.showExample ? docHTML(modelRecord(sc, rec.scenarioDate), { example: true }) : '') : '');
+  }
+
+  let qrLib = null;
+  function loadQR() {
+    if (!qrLib) {
+      qrLib = new Promise((resolve, reject) => {
+        const el = document.createElement('script');
+        el.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+        el.onload = () => (window.QRCode ? resolve(window.QRCode) : reject(new Error('QR library missing')));
+        el.onerror = () => { qrLib = null; reject(new Error('QR library failed to load')); };
+        document.head.appendChild(el);
+      });
+    }
+    return qrLib;
+  }
+  async function drawQR() {
+    const box = $('#qr');
+    const link = classLink();
+    if (!box || !link) return;
+    try {
+      const QR = await loadQR();
+      if (!box.isConnected) return;
+      box.innerHTML = '';
+      new QR(box, { text: link, width: 168, height: 168, colorDark: '#000000', colorLight: '#ffffff', correctLevel: QR.CorrectLevel.M });
+    } catch (e) { box.hidden = true; }
+  }
+
+  let classTimer = null;
+  function syncAuto() {
+    const c = state.cls;
+    const on = state.view === 'review' && c.auto && !!c.items && !c.openId;
+    if (on && !classTimer) classTimer = setInterval(() => classLoad(true), 15000);
+    if (!on && classTimer) { clearInterval(classTimer); classTimer = null; }
+  }
+  function renderClassRows() {
+    const rows = $('#class-rows'); if (rows) rows.innerHTML = classRowsHTML();
+    const st = $('#class-status'); if (st) st.textContent = classStatus();
+  }
+
+  async function classLoad(silent) {
+    const c = state.cls;
+    const input = $('#rv-code');
+    if (input) LS.set(KEY_REVIEW_CODE, input.value.trim());
+    const code = LS.get(KEY_REVIEW_CODE) || '';
+    if (!code) { c.error = 'Enter your review code.'; render(); return; }
+    if (c.loading) return;
+    c.loading = true;
+    if (!silent) { c.error = ''; if (!c.items) render(); else { const b = $('[data-action="class-refresh"]'); if (b) b.disabled = true; } }
+    let wrong = false;
+    try {
+      const rows = await classApi.list(code);
+      c.items = (Array.isArray(rows) ? rows : []).filter((it) => it && it.id && it.record && TEMPLATES[it.record.template]);
+      c.updated = new Date();
+      c.error = '';
+    } catch (e) {
+      wrong = /review code/i.test(e.message);
+      if (wrong) { c.items = null; c.auto = false; c.openId = null; LS.del(KEY_REVIEW_CODE); }
+      c.error = wrong ? 'That review code is not correct.' : 'Could not load submissions (' + e.message + '). Check your internet connection and try again.';
+    }
+    c.loading = false;
+    if (state.view !== 'review') return;
+    if (c.openId) { if (!clsItem(c.openId)) { c.openId = null; render(); } return; }
+    if (!silent || wrong || !$('#class-rows')) { render(); return; }
+    renderClassRows();
+    const b = $('[data-action="class-refresh"]'); if (b) b.disabled = false;
+  }
+
+  function classOpen(id) {
+    const c = state.cls;
+    c.order = classOrder();
+    c.openId = id; c.confirmDel = false;
+    state.showExample = false;
+    render();
+    window.scrollTo(0, 0);
+  }
+
+  function submitError(e) {
+    return 'Could not submit' + (e && e.status ? ' (' + e.message + ')' : '. Check your internet connection') + '. Your work is still here; try again.';
+  }
+  async function submitRecord(rec) {
+    const sc = scenarioById(rec.scenarioId);
+    const ev = sc ? evaluate(asDraft(rec)) : null;
+    const id = uuid();
+    const record = clone(rec);
+    delete record.submittedAt; delete record.submissionId;
+    await classApi.submit({
+      id, name: String(rec.author || '').trim().slice(0, 80) || 'Unnamed', scenario_id: rec.scenarioId || null,
+      scenario_title: sc ? sc.title : TEMPLATES[rec.template].label + ' (blank record)', template: rec.template,
+      found: ev ? ev.found : null, total: ev ? ev.total : null, checks_used: Number(rec.checksUsed) || 0, record
+    });
+    return id;
   }
 
   /* Guide */
@@ -1314,11 +1586,11 @@ details.md pre { margin: 10px 0 0; padding: 16px; overflow-x: auto; border-radiu
   }
 
   // First click arms the button; a second click within 4 seconds confirms.
-  function arm(btn, text) {
+  function arm(btn, text, safe) {
     btn.dataset.armed = '1';
     btn.dataset.label = btn.innerHTML;
     btn.textContent = text;
-    btn.classList.add('btn-danger');
+    if (!safe) btn.classList.add('btn-danger');
     setTimeout(() => {
       if (btn.isConnected && btn.dataset.armed) { delete btn.dataset.armed; btn.innerHTML = btn.dataset.label; btn.classList.remove('btn-danger'); }
     }, 4000);
@@ -1344,13 +1616,14 @@ details.md pre { margin: 10px 0 0; padding: 16px; overflow-x: auto; border-radiu
     if (first) { first.scrollIntoView({ block: 'center', behavior: 'smooth' }); const input = $('input, select, textarea', first); if (input) input.focus({ preventScroll: true }); }
   }
 
-  async function saveRecord(btn) {
+  // Builds the record from the draft, or highlights the missing required fields and returns null.
+  function buildRecord() {
     const missing = requiredMissing(draft);
     if (missing.length) {
       if (state.review) { state.review = null; render(); }
       toast('Fill in the required fields first: ' + missing.join(', ') + '.');
       markInvalid();
-      return;
+      return null;
     }
     const sc = scenarioById(draft.scenarioId);
     const now = new Date().toISOString();
@@ -1362,20 +1635,27 @@ details.md pre { margin: 10px 0 0; padding: 16px; overflow-x: auto; border-radiu
     let rec;
     if (draft.mode === 'edit') {
       const old = store.records.find((r) => r.id === draft.editingId);
-      if (!old) { toast('This record no longer exists.'); return; }
+      if (!old) { toast('This record no longer exists.'); return null; }
       rec = clone(old);
       rec.fields = fields; rec.timeline = timeline; rec.updatedAt = now;
       rec.version = (old.version || 1) + 1;
       rec.revisions = (old.revisions || []).concat([{ v: rec.version, at: now, by, note: String(draft.changeNote || '').trim() || 'Updated' }]);
+      rec.checksUsed = (Number(old.checksUsed) || 0) + (draft.checks || 0);
       if (ev) rec.check = { found: ev.found, total: ev.total, at: now };
     } else {
       rec = {
         id: nextId(TEMPLATES[draft.template].prefix), template: draft.template, scenarioId: draft.scenarioId, scenarioDate: draft.scenarioDate,
-        fields, timeline, author: by, createdAt: now, updatedAt: now, version: 1,
+        fields, timeline, author: by, createdAt: now, updatedAt: now, version: 1, checksUsed: draft.checks || 0,
         revisions: [{ v: 1, at: now, by, note: sc ? 'Created from the scenario “' + sc.title + '”' : 'Created' }],
         check: ev ? { found: ev.found, total: ev.total, at: now } : null
       };
     }
+    return rec;
+  }
+
+  async function saveRecord(btn) {
+    const rec = buildRecord();
+    if (!rec) return;
     if (btn) btn.disabled = true;
     try { await store.save(rec); } catch (e) { if (btn) btn.disabled = false; return; }
     clearDraft();
@@ -1384,16 +1664,51 @@ details.md pre { margin: 10px 0 0; padding: 16px; overflow-x: auto; border-radiu
     go('record-' + rec.id);
   }
 
+  async function submitDraft(btn) {
+    if (requiredMissing(draft).length) { buildRecord(); return; }
+    if (!btn.dataset.armed) { arm(btn, 'Click again to submit', true); return; }
+    const rec = buildRecord();
+    if (!rec) return;
+    delete btn.dataset.armed;
+    btn.disabled = true;
+    btn.textContent = 'Submitting…';
+    try {
+      rec.submissionId = await submitRecord(rec);
+      rec.submittedAt = new Date().toISOString();
+    } catch (e) {
+      btn.disabled = false;
+      btn.innerHTML = btn.dataset.label || 'Submit to class';
+      toast(submitError(e));
+      return;
+    }
+    try { await store.save(rec); } catch (e) { /* the submission already went through */ }
+    clearDraft();
+    state.review = null;
+    toast('Submitted to class');
+    go('record-' + rec.id);
+  }
+
   function route() {
     const h = decodeURIComponent(location.hash.replace(/^#/, ''));
     state.confirmDelete = false;
     state.confirmReset = false;
+    state.cls.confirmClear = false; state.cls.confirmDel = false;
     if (h === 'records') state.view = 'records';
     else if (h === 'guide') state.view = 'guide';
+    else if (h === 'review') state.view = 'review';
+    else if (h.indexOf('start-') === 0 && scenarioById(h.slice(6))) {
+      // Class link: open the scenario straight away (or ask before replacing unsaved work).
+      const id = h.slice(6);
+      if (draft && draft.scenarioId === id && draft.mode !== 'edit') state.view = 'practice';
+      else if (draft) { state.pendingStart = { mode: 'scenario', scenarioId: id }; state.view = 'scenarios'; }
+      else { draft = newDraft({ mode: 'scenario', scenarioId: id }); persistDraft(); state.view = 'practice'; }
+      history.replaceState(null, '', state.view === 'practice' ? '#practice' : '#scenarios');
+    }
     else if (h === 'practice' && draft) state.view = 'practice';
     else if (h.indexOf('record-') === 0) { state.view = 'record'; state.recordId = h.slice(7); }
     else state.view = 'scenarios';
     if (state.view !== 'practice') { state.review = null; state.showExample = false; }
+    if (state.view !== 'review') state.cls.openId = null;
     render();
     window.scrollTo(0, 0);
   }
@@ -1401,6 +1716,8 @@ details.md pre { margin: 10px 0 0; padding: 16px; overflow-x: auto; border-radiu
   app.addEventListener('click', async (e) => {
     const row = e.target.closest('tr[data-open]');
     if (row && !e.target.closest('a')) { go('record-' + row.dataset.open); return; }
+    const subRow = e.target.closest('tr[data-sub]');
+    if (subRow) { e.preventDefault(); classOpen(subRow.dataset.sub); return; }
     const btn = e.target.closest('[data-action]');
     if (!btn) return;
     const act = btn.dataset.action;
@@ -1443,6 +1760,7 @@ details.md pre { margin: 10px 0 0; padding: 16px; overflow-x: auto; border-radiu
       $('#tl-rows').innerHTML = timelineRowsHTML();
       saveDraftSoon();
     } else if (act === 'check') {
+      draft.checks = (draft.checks || 0) + 1;
       persistDraft();
       state.review = evaluate(draft);
       $('#form-pane').innerHTML = reviewHTML();
@@ -1452,8 +1770,63 @@ details.md pre { margin: 10px 0 0; padding: 16px; overflow-x: auto; border-radiu
       $('#form-pane').innerHTML = formHTML();
     } else if (act === 'toggle-example') {
       state.showExample = !state.showExample;
-      $('#form-pane').innerHTML = reviewHTML();
+      render();
     } else if (act === 'save') { saveRecord(btn); }
+    else if (act === 'submit') { submitDraft(btn); }
+    else if (act === 'submit-record') {
+      const rec = store.records.find((r) => r.id === state.recordId);
+      if (!rec) return;
+      if (!btn.dataset.armed) { arm(btn, 'Click again to submit', true); return; }
+      delete btn.dataset.armed;
+      btn.disabled = true;
+      btn.textContent = 'Submitting…';
+      try {
+        const upd = clone(rec);
+        upd.submissionId = await submitRecord(rec);
+        upd.submittedAt = new Date().toISOString();
+        await store.save(upd);
+        toast('Submitted to class');
+        render();
+      } catch (err) { btn.disabled = false; btn.innerHTML = btn.dataset.label || 'Submit to class'; toast(submitError(err)); }
+    }
+    else if (act === 'copy-link') {
+      const link = classLink();
+      if (link) toast((await copyText(link)) ? 'Link copied' : 'Copy is blocked here. Select the link and copy it.');
+    }
+    else if (act === 'class-open') { e.preventDefault(); classOpen(btn.dataset.id); }
+    else if (act === 'class-back') { state.cls.openId = null; state.showExample = false; render(); window.scrollTo(0, 0); }
+    else if (act === 'class-prev' || act === 'class-next') {
+      const order = state.cls.order.length ? state.cls.order : classOrder();
+      const next = order[order.indexOf(state.cls.openId) + (act === 'class-next' ? 1 : -1)];
+      if (next) classOpen(next);
+    }
+    else if (act === 'class-refresh') { classLoad(false); }
+    else if (act === 'class-lock') { LS.del(KEY_REVIEW_CODE); Object.assign(state.cls, { items: null, auto: false, openId: null, error: '', updated: null }); render(); }
+    else if (act === 'class-clear') { state.cls.confirmClear = true; render(); }
+    else if (act === 'class-clear-cancel') { state.cls.confirmClear = false; render(); }
+    else if (act === 'class-clear-confirm') {
+      btn.disabled = true;
+      try { await classApi.clear(LS.get(KEY_REVIEW_CODE) || ''); state.cls.items = []; state.cls.confirmClear = false; toast('All submissions deleted'); render(); }
+      catch (err) { btn.disabled = false; toast('Could not delete the submissions (' + err.message + ').'); }
+    }
+    else if (act === 'class-del') { state.cls.confirmDel = true; render(); }
+    else if (act === 'class-del-cancel') { state.cls.confirmDel = false; render(); }
+    else if (act === 'class-del-confirm') {
+      const c = state.cls;
+      const order = c.order.length ? c.order : classOrder();
+      const pos = order.indexOf(c.openId);
+      const id = c.openId;
+      btn.disabled = true;
+      try {
+        await classApi.remove(LS.get(KEY_REVIEW_CODE) || '', id);
+        c.items = c.items.filter((it) => it.id !== id);
+        c.order = order.filter((x) => x !== id);
+        c.openId = c.order[Math.min(pos, c.order.length - 1)] || null;
+        c.confirmDel = false; state.showExample = false;
+        toast('Submission deleted');
+        render();
+      } catch (err) { btn.disabled = false; toast('Could not delete the submission (' + err.message + ').'); }
+    }
     else if (act === 'discard') {
       if (btn.dataset.armed) {
         const editing = draft.mode === 'edit' ? draft.editingId : null;
@@ -1540,6 +1913,10 @@ details.md pre { margin: 10px 0 0; padding: 16px; overflow-x: auto; border-radiu
     if (t.id === 'rec-q') { state.filters.q = t.value; $('#rec-rows').innerHTML = recordRows(); return; }
     if (t.id === 'rec-type') { state.filters.type = t.value; $('#rec-rows').innerHTML = recordRows(); return; }
     if (t.id === 'rec-status') { state.filters.status = t.value; $('#rec-rows').innerHTML = recordRows(); return; }
+    if (t.id === 'class-scenario') { state.cls.scenario = t.value; renderClassRows(); return; }
+    if (t.id === 'class-sort') { state.cls.sort = t.value; renderClassRows(); return; }
+    if (t.id === 'class-auto') { state.cls.auto = t.checked; syncAuto(); if (t.checked) classLoad(true); return; }
+    if (t.id === 'share-scenario') { state.cls.share = t.value; render(); return; }
     if (!draft) return;
     if (t.dataset.field) draft.fields[t.dataset.field] = t.value;
     else if (t.dataset.tl) { const entry = draft.timeline[Number(t.dataset.i)]; if (entry) entry[t.dataset.tl] = t.value; }
@@ -1548,6 +1925,19 @@ details.md pre { margin: 10px 0 0; padding: 16px; overflow-x: auto; border-radiu
     else return;
     const field = t.closest('.field.invalid'); if (field) field.classList.remove('invalid');
     saveDraftSoon();
+  });
+
+  app.addEventListener('submit', (e) => {
+    if (e.target.dataset.form === 'class-code') { e.preventDefault(); classLoad(false); }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (state.view !== 'review' || !state.cls.openId || e.ctrlKey || e.metaKey || e.altKey) return;
+    if (/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName)) return;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+      const btn = $('[data-action="class-' + (e.key === 'ArrowRight' ? 'next' : 'prev') + '"]');
+      if (btn && !btn.disabled) { e.preventDefault(); btn.click(); }
+    }
   });
 
   app.addEventListener('change', (e) => {

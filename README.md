@@ -14,8 +14,8 @@ You pick a realistic scenario. Updates arrive one at a time, each with its own t
    - Affected system, severity, impact and exact error messages
    - A **timeline** with one time-stamped entry per action
    - Cause, resolution, status and follow-up actions
-4. **Check my documentation** scores your record against the scenario's key facts, grouped by **Who, What, When, Where, Why, How (5W1H)**, and against documentation standards: required fields, timeline in time order, no passwords. **Show example documentation** shows a model answer.
-5. **Save record.** It gets an ID such as `INC-2026-0001` and appears in the *Records* tab.
+4. **Check my documentation** scores your record against the scenario's key facts, grouped by **Who, What, When, Where, Why, How (5W1H)**, and against documentation standards: required fields, timeline in time order, no passwords.
+5. **Save record** (or **Submit to class**, see below). It gets an ID such as `INC-2026-0001` and appears in the *Records* tab, where **Compare with example answer** shows a model answer.
 
 ## Features
 
@@ -30,7 +30,8 @@ You pick a realistic scenario. Updates arrive one at a time, each with its own t
 | Edit with **reason for change** and revision history (version 1, 2, 3…) | Document control and audit trail |
 | Records log with search and filters | Finding past documentation |
 | Copy as Markdown, download `.md`, download all as JSON | Exporting and sharing records |
-| Auto-saved draft | Not losing work in progress |
+| Auto-saved draft, **Start over** and **Reset all** | Not losing work in progress; starting fresh |
+| **Submit to class** and the *Class review* tab | Collecting and reviewing everyone's documentation |
 | *How to document* guide | 5W1H, rules for good documentation, template guide |
 
 ## Scenarios
@@ -48,24 +49,54 @@ The *Document a real event* section starts a blank record from any template.
 
 ## Running it
 
-The whole system is one file, `index.html`. It needs no server or installation.
+The whole site is one file, `index.html`. It needs no build step.
 
 - **On your computer:** open `index.html` in a browser.
-- **GitHub Pages:** in the repository go to **Settings → Pages**, choose **Deploy from a branch**, pick this branch and `/ (root)`, and save. The site appears at `https://zaizkuu.github.io/Simple-Documentation-Demo/`.
+- **Vercel (recommended):**
+  1. Sign in at [vercel.com](https://vercel.com) with GitHub.
+  2. **Add New… → Project**, then **Import** `zaizkuu/Simple-Documentation-Demo`.
+  3. Change **Project Name** if you want a different address (for example `sysadmin-doclab` gives `sysadmin-doclab.vercel.app`).
+  4. Leave **Framework Preset** as *Other* with no build command, and click **Deploy**.
+
+  Every push to the repository redeploys automatically.
+- **GitHub Pages:** in the repository go to **Settings → Pages**, choose **Deploy from a branch**, pick the branch and `/ (root)`, and save.
 
 ### Where records are saved
 
-- **Opened from a file or GitHub Pages:** in that browser's local storage, on that device only. Use **Download all (JSON)** to keep a copy.
-- **Opened from the Claude artifact link:** in your own private storage on your Claude account.
+- **Personal records** (the *Records* tab) stay in each person's browser, on that device. Use **Download all (JSON)** to keep a copy.
+- **Class submissions** go to the Supabase database, once it's connected.
+- **On the Claude artifact link,** records are saved privately to your Claude account. Class submissions don't work there.
+
+## Class submissions (Supabase)
+
+Classmates open the site, do a scenario, type their name in **Documented by** and click **Submit to class**. No account is needed. The presenter opens **Class review**, enters the review code, and can:
+
+- show a **QR code and link** that opens a chosen scenario directly
+- see every submission with its key-fact score and how often the person used the check
+- sort and filter, turn on auto-refresh, and step through submissions with **Previous / Next** (or the ← → keys)
+- **compare** each submission with the example answer
+- delete single submissions or **delete all** after a practice run
+
+Visitors can only **add** submissions. Reading or deleting them needs the review code, which is stored as a bcrypt hash in the database.
+
+### Setup
+
+1. Create a free project at [supabase.com](https://supabase.com).
+2. Open **SQL Editor → New query**. Paste `supabase/schema.sql`, change `CHANGE-THIS-CODE` at the bottom to your review code, and click **Run**. Don't commit your real code.
+3. In **Project Settings → API**, copy the **Project URL** and the **anon / publishable key**.
+4. Put them in `SUPABASE_URL` and `SUPABASE_KEY` near the top of the script in `index.html`, then commit and push. Vercel redeploys automatically.
+
+To change the review code later, run the last statement of `schema.sql` again with a new code.
 
 ## Suggested demo (about 5 minutes)
 
 1. Show the *Scenarios* tab and the live clock.
 2. Start **Shared drive is down**. Reveal the first update and document it live: title, date and time, reporter, contact, the error message, a timeline entry.
 3. Reveal the remaining updates, adding a timeline entry for each.
-4. Click **Check my documentation**: walk through the 5W1H score and the missed facts, then open the example answer.
-5. Save the record. Show the record view, edit it with a reason, and point out the revision history.
-6. Finish on the *How to document* tab.
+4. Click **Check my documentation** and walk through the 5W1H score and the missed facts.
+5. Save the record. Open **Compare with example answer**, then edit the record with a reason and point out the revision history.
+6. **Class activity:** show the QR code on *Class review*, let classmates submit, then review their work together.
+7. Finish on the *How to document* tab.
 
 ## Changing the scenarios
 
