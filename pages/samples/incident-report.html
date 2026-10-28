@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>INC-2026-0142 File Server Outage · SysAdmin Docs</title>
+  <meta name="description" content="Sample blameless incident report for a file server outage: summary, impact, timeline, root cause analysis with 5 Whys, data privacy assessment and corrective actions.">
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <script>try{var t=localStorage.getItem('docs-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+</head>
+<body data-root="../../" data-page="incident" data-updated="2026-10-09" data-status="Approved" data-version="1.0">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <header class="topbar" id="topbar"></header>
+  <div class="layout">
+    <nav class="sidebar" id="sidebar" aria-label="Documentation"></nav>
+    <main class="content" id="content" tabindex="-1">
+      <article class="doc">
+
+        <header class="doc-header">
+          <p class="eyebrow">Incident Report (Post-Incident Review)</p>
+          <h1>File Server Outage: Disk Full on fs-01</h1>
+          <p class="lead">On 2026-10-06, staff could not open or save files on the shared drives for 85 minutes because a debug log filled the server's disk.</p>
+        </header>
+
+        <div class="doc-control">
+          <div class="doc-control-title"><span>Incident summary</span><span class="badge badge-approved">Resolved</span></div>
+          <dl>
+            <div><dt>Incident ID</dt><dd>INC-2026-0142</dd></div>
+            <div><dt>Severity</dt><dd>SEV-2 (High)</dd></div>
+            <div><dt>Date</dt><dd>2026-10-06</dd></div>
+            <div><dt>Duration</dt><dd>85 min (08:40–10:05 PHT)</dd></div>
+            <div><dt>Service</dt><dd>File shares (fs-01)</dd></div>
+            <div><dt>Incident lead</dt><dd>Senior System Administrator</dd></div>
+            <div><dt>Report author</dt><dd>System Administrator</dd></div>
+            <div><dt>Approved by</dt><dd>IT Manager, 2026-10-09</dd></div>
+          </dl>
+        </div>
+
+        <div class="callout tip">
+          <p class="callout-title">Blameless report</p>
+          <p>This report focuses on <strong>systems and processes</strong>, not on blaming individuals. Its goal is to understand what happened and prevent it from happening again.</p>
+        </div>
+
+        <h2 id="summary">Summary</h2>
+        <p>On 6 October 2026, from 08:40 to 10:05 Philippine Time, staff in four departments could not open or save files on the shared network drives hosted on <code>fs-01</code>. The <code>/var</code> partition reached 100% capacity because a Samba debug log had grown to 38 GB. The log level had been raised to the maximum during troubleshooting four days earlier and was never set back. Service was restored by archiving the log, restoring the normal log level and restarting Samba. <strong>No data was lost.</strong></p>
+
+        <h2 id="impact">Impact</h2>
+        <ul>
+          <li><strong>Users affected:</strong> about 120 staff (Finance, HR, Sales and Operations).</li>
+          <li><strong>Business impact:</strong> 85 minutes without shared files; the payroll team's cut-off was moved by two hours.</li>
+          <li><strong>Data:</strong> no data lost or corrupted; files saved before 08:40 were intact.</li>
+          <li><strong>Security / privacy:</strong> no unauthorized access or disclosure (see <a href="#privacy-assessment">privacy assessment</a>).</li>
+        </ul>
+
+        <h2 id="timeline">Timeline</h2>
+        <p>All times are Philippine Time (PHT, UTC+8).</p>
+        <table>
+          <thead>
+            <tr><th>Date / time</th><th>Event</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>10-02 15:10</td><td>While troubleshooting a printer-share issue, Samba's <code>log level</code> is raised to <code>10</code> (maximum detail). The temporary change is not recorded in a change request.</td></tr>
+            <tr><td>10-06 08:40</td><td><code>/var</code> reaches 100%. Samba can no longer write its state files and starts refusing connections.</td></tr>
+            <tr><td>10-06 08:47</td><td>Service desk receives the first calls: “Z: drive not accessible”. Ticket opened.</td></tr>
+            <tr><td>10-06 08:55</td><td>On-call administrator acknowledges and declares a SEV-2 incident.</td></tr>
+            <tr><td>10-06 09:05</td><td><code>df -h</code> shows <code>/var</code> at 100%. <code>du</code> identifies <code>/var/log/samba/log.smbd</code> at 38 GB.</td></tr>
+            <tr><td>10-06 09:20</td><td>Samba stopped; log copied to bkp-01 for analysis, then emptied. Log level set back to <code>1</code>.</td></tr>
+            <tr><td>10-06 09:35</td><td>Samba started. Access confirmed for test users.</td></tr>
+            <tr><td>10-06 10:05</td><td>All departments confirm access. Incident resolved.</td></tr>
+            <tr><td>10-06 10:30</td><td>Resolution notice emailed to all staff.</td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="detection">Detection</h2>
+        <p>The incident was detected by <strong>users</strong>, seven minutes after it began. Monitoring did not alert because <strong>disk-space alerts were not configured</strong> on fs-01. This is a detection gap (see action 1).</p>
+
+        <h2 id="root-cause">Root cause analysis</h2>
+        <p>We used the <strong>5 Whys</strong> technique, asking “why?” until we reached a cause we can fix:</p>
+        <ol class="steps">
+          <li><strong>Why were the shares unavailable?</strong>Samba could not write to <code>/var</code>.</li>
+          <li><strong>Why could it not write?</strong>The <code>/var</code> partition was 100% full.</li>
+          <li><strong>Why was it full?</strong>The Samba log grew to 38 GB in four days.</li>
+          <li><strong>Why did the log grow so fast?</strong>Debug logging (level 10) was left on after troubleshooting.</li>
+          <li><strong>Why was it left on?</strong>The temporary change was not documented, so no one had a task to revert it. Log rotation had no size limit, and there was no disk-space alert.</li>
+        </ol>
+        <div class="callout warning">
+          <p class="callout-title">Root cause</p>
+          <p>An <strong>undocumented temporary configuration change</strong>, combined with <strong>no size limit on log rotation</strong> and <strong>no disk-usage monitoring</strong>.</p>
+        </div>
+
+        <h2 id="resolution">Resolution</h2>
+        <p>Commands run during recovery, recorded for future reference:</p>
+<pre><code class="language-bash">df -h /var                                             # confirmed 100% used
+sudo du -xh /var --max-depth=3 | sort -h | tail -n 5   # found log.smbd (38G)
+sudo systemctl stop smbd
+sudo rsync -a /var/log/samba/log.smbd backup@bkp-01:/incidents/INC-2026-0142/
+sudo truncate -s 0 /var/log/samba/log.smbd
+sudo sed -i 's/log level = 10/log level = 1/' /etc/samba/smb.conf
+testparm -s 2>/dev/null | grep "log level"             # verify the new setting
+sudo systemctl start smbd</code></pre>
+
+        <h2 id="privacy-assessment">Data privacy assessment</h2>
+        <p>The incident affected <strong>availability only</strong>. No personal data was accessed by unauthorized people, disclosed, altered or lost. It is therefore <strong>not a reportable personal data breach</strong> under the Data Privacy Act of 2012. The Data Protection Officer reviewed this assessment and agreed on 2026-10-07.</p>
+        <div class="callout note">
+          <p class="callout-title">Why record this?</p>
+          <p>Even when no notification is needed, writing down the assessment and who approved it shows regulators and auditors that the question was considered. See <a href="../it-policies-compliance.html#data-privacy-act">Data Privacy Act</a>.</p>
+        </div>
+
+        <h2 id="actions">Corrective and preventive actions</h2>
+        <table>
+          <thead>
+            <tr><th>#</th><th>Action</th><th>Owner</th><th>Due</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>Add disk-usage alerts at 80% (warning) and 90% (critical) on all servers</td><td>System Administrator</td><td>2026-10-13</td><td><span class="badge badge-approved">Done</span></td></tr>
+            <tr><td>2</td><td>Limit Samba log size with <code>max log size</code> and logrotate (100 MB per file)</td><td>System Administrator</td><td>2026-10-10</td><td><span class="badge badge-approved">Done</span></td></tr>
+            <tr><td>3</td><td>Update the change policy: temporary changes, including debug settings, need a change record with a revert date</td><td>IT Manager</td><td>2026-10-20</td><td><span class="badge badge-approved">Done</span></td></tr>
+            <tr><td>4</td><td>Move <code>/var/log</code> to its own partition on fs-01</td><td>Senior System Administrator</td><td>2026-11-15</td><td><span class="badge badge-review">In progress</span></td></tr>
+            <tr><td>5</td><td>Add a “disk full” section to the file server runbook</td><td>System Administrator</td><td>2026-10-31</td><td><span class="badge badge-draft">Open</span></td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="lessons">Lessons learned</h2>
+        <div class="compare">
+          <div class="do">
+            <h4>What went well</h4>
+            <ul>
+              <li>Clear escalation: the incident was declared within 15 minutes.</li>
+              <li>The cause was found quickly with standard commands.</li>
+              <li>Users received a clear resolution notice.</li>
+            </ul>
+          </div>
+          <div class="dont">
+            <h4>What we will improve</h4>
+            <ul>
+              <li>Temporary changes must be documented, even when they seem small.</li>
+              <li>Monitoring must alert us before users notice.</li>
+              <li>Status updates should go out <em>during</em> the incident, not only after.</li>
+            </ul>
+          </div>
+        </div>
+
+        <h2 id="revision-history">Revision history</h2>
+        <table>
+          <thead>
+            <tr><th>Version</th><th>Date</th><th>Author</th><th>Change</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>0.1</td><td>2026-10-06</td><td>System Administrator</td><td>Initial timeline and summary</td></tr>
+            <tr><td>0.2</td><td>2026-10-08</td><td>System Administrator</td><td>Added root cause analysis and actions after the review meeting</td></tr>
+            <tr><td>1.0</td><td>2026-10-09</td><td>IT Manager</td><td>Approved</td></tr>
+          </tbody>
+        </table>
+
+      </article>
+    </main>
+    <aside class="toc" id="toc" aria-label="On this page"></aside>
+  </div>
+  <script src="../../assets/js/search-index.js"></script>
+  <script src="../../assets/js/site.js"></script>
+</body>
+</html>

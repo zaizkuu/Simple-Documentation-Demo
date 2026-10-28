@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CHG-2026-0088 Web Server Patching · SysAdmin Docs</title>
+  <meta name="description" content="Sample change request for monthly security patching of web servers: risk assessment, implementation plan, verification, backout plan, communication and approvals.">
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <script>try{var t=localStorage.getItem('docs-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+</head>
+<body data-root="../../" data-page="change" data-updated="2026-10-28" data-status="In Review" data-version="0.3">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <header class="topbar" id="topbar"></header>
+  <div class="layout">
+    <nav class="sidebar" id="sidebar" aria-label="Documentation"></nav>
+    <main class="content" id="content" tabindex="-1">
+      <article class="doc">
+
+        <header class="doc-header">
+          <p class="eyebrow">Change Request</p>
+          <h1>Monthly Security Patching of Web Servers</h1>
+          <p class="lead">Request to apply the October 2026 Ubuntu security updates to <code>web-01</code> and <code>web-02</code>, one server at a time, so the company website stays online.</p>
+        </header>
+
+        <div class="doc-control">
+          <div class="doc-control-title"><span>Change details</span><span class="badge badge-review">Awaiting CAB approval</span></div>
+          <dl>
+            <div><dt>Change ID</dt><dd>CHG-2026-0088</dd></div>
+            <div><dt>Change type</dt><dd>Normal</dd></div>
+            <div><dt>Priority</dt><dd>Medium</dd></div>
+            <div><dt>Risk</dt><dd>Medium</dd></div>
+            <div><dt>Requested by</dt><dd>System Administrator</dd></div>
+            <div><dt>Planned window</dt><dd>2026-11-07 22:00 – 24:00 (Sat)</dd></div>
+            <div><dt>Affected service</dt><dd>Company website</dd></div>
+            <div><dt>Configuration items</dt><dd>web-01, web-02, lb-01</dd></div>
+          </dl>
+        </div>
+
+        <h2 id="change-types">Change types (reference)</h2>
+        <table>
+          <thead>
+            <tr><th>Type</th><th>Meaning</th><th>Approval</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Standard</strong></td><td>Low-risk, routine, follows a documented procedure (e.g. creating a user)</td><td>Pre-approved</td></tr>
+            <tr><td><strong>Normal</strong></td><td>Planned change that needs assessment (like this one)</td><td>Change Advisory Board (CAB)</td></tr>
+            <tr><td><strong>Emergency</strong></td><td>Must be done immediately to restore service or fix a critical risk</td><td>Emergency approver; documented afterwards</td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="description">Description and reason</h2>
+        <p>Apply all pending Ubuntu security updates, including kernel and OpenSSL packages, to both web servers. The October Ubuntu Security Notices include fixes rated <strong>High</strong>. The Patch Management Policy requires High-severity patches to be applied <strong>within 30 days</strong>.</p>
+        <p><strong>If we don't make this change:</strong> the servers stay exposed to known vulnerabilities and we fall out of compliance with the patch policy.</p>
+
+        <h2 id="risk">Risk and impact assessment</h2>
+        <p>The website runs on two servers behind a load balancer (<code>lb-01</code>). Patching one server at a time means <strong>no downtime is expected</strong>, only reduced capacity for about 20 minutes per server.</p>
+        <table>
+          <thead>
+            <tr><th>Risk</th><th>Likelihood</th><th>Impact</th><th>Mitigation</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>An update breaks the website (nginx fails to start)</td><td>Low</td><td>High</td><td>Tested on staging first; VM snapshot before patching; backout plan below</td></tr>
+            <tr><td>Server does not come back after reboot</td><td>Low</td><td>Medium</td><td>Second server keeps the site online; console access confirmed</td></tr>
+            <tr><td>Change runs past the window</td><td>Low</td><td>Low</td><td>Two-hour window for about 45 minutes of work</td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="pre-checks">Pre-implementation checklist</h2>
+        <div class="checklist" data-checklist="chg-2026-0088-pre">
+          <div class="checklist-head"><strong>Complete before the window opens</strong></div>
+          <ul>
+            <li><label><input type="checkbox"><span>Updates tested on staging (web-stg-01) on 2026-11-04 with no errors</span></label></li>
+            <li><label><input type="checkbox"><span>Last night's backups verified for web-01 and web-02</span></label></li>
+            <li><label><input type="checkbox"><span>Change approved by the CAB</span></label></li>
+            <li><label><input type="checkbox"><span>Stakeholders notified (see communication plan)</span></label></li>
+            <li><label><input type="checkbox"><span>Console access to both VMs confirmed</span></label></li>
+            <li><label><input type="checkbox"><span>Monitoring dashboard open during the change</span></label></li>
+          </ul>
+        </div>
+
+        <h2 id="implementation">Implementation plan</h2>
+        <p>Do <code>web-01</code> first. Repeat steps 1–7 for <code>web-02</code> only after <code>web-01</code> passes verification.</p>
+        <ol class="steps">
+          <li><strong>Drain web-01 in the load balancer</strong>so it stops receiving new visitors. Wait until active connections reach 0.</li>
+          <li><strong>Take a VM snapshot</strong>named <code>pre-CHG-2026-0088</code>.</li>
+          <li><strong>Refresh the package list and save the list of updates to this change record.</strong>
+<pre><code class="language-bash">sudo apt update
+apt list --upgradable 2>/dev/null | tee ~/CHG-2026-0088-web-01.txt</code></pre>
+          </li>
+          <li><strong>Install the updates.</strong>
+<pre><code class="language-bash">sudo apt upgrade -y</code></pre>
+          </li>
+          <li><strong>Reboot if required.</strong>
+<pre><code class="language-bash">[ -f /var/run/reboot-required ] &amp;&amp; sudo reboot</code></pre>
+          </li>
+          <li><strong>Verify the server</strong>(see verification below).</li>
+          <li><strong>Return web-01 to the load balancer pool</strong>and watch error rates for 10 minutes.</li>
+        </ol>
+
+        <h2 id="verification">Verification</h2>
+<pre><code class="language-bash">systemctl is-active nginx                  # expected: active
+curl -sI http://localhost | head -n 1      # expected: HTTP/1.1 200 OK
+uname -r                                   # expected: the new kernel version</code></pre>
+        <p>Then open <code>https://www.example.com</code> from an outside network and check the home page and login page.</p>
+
+        <h2 id="backout">Backout plan</h2>
+        <p>If verification fails and cannot be fixed within <strong>15 minutes</strong>:</p>
+        <ol class="steps">
+          <li><strong>Keep the server out of the load balancer pool.</strong></li>
+          <li><strong>Revert the VM to the snapshot</strong><code>pre-CHG-2026-0088</code> (about 10 minutes).</li>
+          <li><strong>Verify the server</strong>with the same checks, then return it to the pool.</li>
+          <li><strong>Record what happened</strong>in this change record. Open an incident if users were affected.</li>
+        </ol>
+        <div class="callout note">
+          <p class="callout-title">Note</p>
+          <p>Delete the snapshot <strong>7 days</strong> after a successful change. Old snapshots waste storage and slow down the VM.</p>
+        </div>
+
+        <h2 id="communication">Communication plan</h2>
+        <table>
+          <thead>
+            <tr><th>When</th><th>Audience</th><th>Message</th><th>Channel</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>3 days before</td><td>Web team, service desk</td><td>Maintenance notice and window</td><td>Email</td></tr>
+            <tr><td>Window start</td><td>IT on-call</td><td>Change started</td><td>IT chat channel</td></tr>
+            <tr><td>Window end</td><td>Web team, service desk</td><td>Completed / backed out</td><td>Email + ticket update</td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="approvals">Approvals</h2>
+        <table>
+          <thead>
+            <tr><th>Role</th><th>Decision</th><th>Date</th><th>Comment</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Requester: System Administrator</td><td><span class="badge badge-info">Submitted</span></td><td>2026-10-27</td><td>—</td></tr>
+            <tr><td>Technical reviewer: Senior System Administrator</td><td><span class="badge badge-approved">Approved</span></td><td>2026-10-28</td><td>Added backout time limit</td></tr>
+            <tr><td>Service owner: Web Team Lead</td><td><span class="badge badge-approved">Approved</span></td><td>2026-10-28</td><td>Saturday night window is fine</td></tr>
+            <tr><td>CAB chair: IT Manager</td><td><span class="badge badge-review">Pending</span></td><td>—</td><td>On the agenda for the 2026-11-03 CAB meeting</td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="pir">Post-implementation review</h2>
+        <p>To be completed after the change.</p>
+        <table>
+          <tbody>
+            <tr><th scope="row">Outcome</th><td>— (Successful / Successful with issues / Backed out)</td></tr>
+            <tr><th scope="row">Actual start / end</th><td>—</td></tr>
+            <tr><th scope="row">Issues encountered</th><td>—</td></tr>
+            <tr><th scope="row">Follow-up actions</th><td>—</td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="revision-history">Revision history</h2>
+        <table>
+          <thead>
+            <tr><th>Version</th><th>Date</th><th>Author</th><th>Change</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>0.1</td><td>2026-10-27</td><td>System Administrator</td><td>Initial request</td></tr>
+            <tr><td>0.2</td><td>2026-10-28</td><td>System Administrator</td><td>Added 15-minute backout time limit (technical review)</td></tr>
+            <tr><td>0.3</td><td>2026-10-28</td><td>System Administrator</td><td>Added communication plan; submitted to CAB</td></tr>
+          </tbody>
+        </table>
+
+      </article>
+    </main>
+    <aside class="toc" id="toc" aria-label="On this page"></aside>
+  </div>
+  <script src="../../assets/js/search-index.js"></script>
+  <script src="../../assets/js/site.js"></script>
+</body>
+</html>

@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>IT Policies &amp; Compliance · SysAdmin Docs</title>
+  <meta name="description" content="IT policies and compliance for system administrators: policy hierarchy, core IT policies, policy lifecycle, the Data Privacy Act of 2012, international frameworks and audits.">
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <script>try{var t=localStorage.getItem('docs-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+</head>
+<body data-root="../" data-page="policies" data-updated="2026-10-28" data-status="Approved" data-version="1.0">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <header class="topbar" id="topbar"></header>
+  <div class="layout">
+    <nav class="sidebar" id="sidebar" aria-label="Documentation"></nav>
+    <main class="content" id="content" tabindex="-1">
+      <article class="doc">
+
+        <header class="doc-header">
+          <p class="eyebrow">Topic 2 of 3</p>
+          <h1>IT Policies and Compliance</h1>
+          <p class="lead">An <strong>IT policy</strong> is a formal, management-approved rule for how technology may be used and managed. <strong>Compliance</strong> means you can show that you follow your own policies and the laws, regulations and standards that apply to you. Documentation is how you show it.</p>
+        </header>
+
+        <h2 id="policy-hierarchy">Policies, standards, procedures and guidelines</h2>
+        <p>These four words are often mixed up, but they form a clear hierarchy. Each level is more specific than the one above it, and each must agree with the level above.</p>
+
+        <figure>
+          <div class="diagram">
+            <svg viewBox="0 0 740 300" role="img" aria-labelledby="pyr-title pyr-desc">
+              <title id="pyr-title">Policy hierarchy pyramid</title>
+              <desc id="pyr-desc">A pyramid with four levels. Top: Policy, the mandatory what and why. Second: Standards, specific mandatory requirements. Third: Procedures, mandatory step-by-step instructions. Bottom: Guidelines, optional recommendations.</desc>
+              <polygon class="dg-accent" points="180,20 220,20 258.75,83 141.25,83"/>
+              <polygon class="dg-accent" points="139.4,86 260.6,86 299.4,149 100.6,149"/>
+              <polygon class="dg-tip" points="98.75,152 301.25,152 340,215 60,215"/>
+              <polygon class="dg-box" points="58.15,218 341.85,218 380.6,281 19.4,281"/>
+              <text class="dg-text" x="200" y="72" text-anchor="middle">Policy</text>
+              <text class="dg-text" x="200" y="123" text-anchor="middle">Standards</text>
+              <text class="dg-text" x="200" y="189" text-anchor="middle">Procedures</text>
+              <text class="dg-text" x="200" y="255" text-anchor="middle">Guidelines</text>
+
+              <line class="dg-dash" x1="249" y1="57" x2="400" y2="57"/>
+              <line class="dg-dash" x1="289" y1="122" x2="400" y2="122"/>
+              <line class="dg-dash" x1="330" y1="188" x2="400" y2="188"/>
+              <line class="dg-dash" x1="370" y1="254" x2="400" y2="254"/>
+
+              <text class="dg-text" x="410" y="52">Policy: the “what” and “why”</text>
+              <text class="dg-sub" x="410" y="70">Mandatory · high-level · approved by management</text>
+              <text class="dg-text" x="410" y="117">Standard: specific requirements</text>
+              <text class="dg-sub" x="410" y="135">Mandatory · measurable, e.g. “12+ characters, MFA”</text>
+              <text class="dg-text" x="410" y="183">Procedure: the “how”</text>
+              <text class="dg-sub" x="410" y="201">Mandatory steps · SOPs and runbooks</text>
+              <text class="dg-text" x="410" y="249">Guideline: recommendations</text>
+              <text class="dg-sub" x="410" y="267">Optional · best-practice advice</text>
+            </svg>
+          </div>
+          <figcaption>Figure 1. The policy hierarchy. Rules get more specific as you go down.</figcaption>
+        </figure>
+
+        <table>
+          <thead>
+            <tr><th>Level</th><th>Mandatory?</th><th>Example: passwords</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Policy</strong></td><td>Yes</td><td>“All accounts must be protected by strong authentication.”</td></tr>
+            <tr><td><strong>Standard</strong></td><td>Yes</td><td>“Passwords must be at least 12 characters. <abbr title="Multi-Factor Authentication">MFA</abbr> is required for administrator and remote access.”</td></tr>
+            <tr><td><strong>Procedure</strong></td><td>Yes</td><td>“How to reset a user's password”, a step-by-step <abbr title="Standard Operating Procedure">SOP</abbr>.</td></tr>
+            <tr><td><strong>Guideline</strong></td><td>No</td><td>“Consider a passphrase of four or more random words.”</td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="core-policies">Core IT policies</h2>
+        <p>Most organizations keep a set of core IT policies. Open each one to see what it covers.</p>
+
+        <details open>
+          <summary>Acceptable Use Policy (AUP)</summary>
+          <div class="details-body">
+            <p><strong>Purpose:</strong> Defines what users may and may not do with company computers, networks, email and internet access.</p>
+            <ul>
+              <li>Company systems are for business use; limited personal use may be allowed.</li>
+              <li>No illegal content, piracy, harassment or attempts to bypass security controls.</li>
+              <li>Users are told that <strong>activity may be monitored</strong>. This matters for <a href="ethics-in-sysadmin.html#privacy">privacy and ethics</a>.</li>
+              <li>Every user signs or electronically accepts the AUP before getting an account.</li>
+            </ul>
+          </div>
+        </details>
+        <details>
+          <summary>Password &amp; Authentication Policy</summary>
+          <div class="details-body">
+            <p><strong>Purpose:</strong> Protects accounts from unauthorized access.</p>
+            <ul>
+              <li>Minimum length (e.g. 12+ characters); long passphrases encouraged.</li>
+              <li>MFA for administrators, remote access and email.</li>
+              <li>Passwords are changed when compromise is suspected, rather than on a fixed schedule (current NIST SP 800-63B guidance).</li>
+              <li>Never share passwords; store them only in an approved password manager.</li>
+            </ul>
+            <p>See the <a href="#policy-example">full policy example</a> below.</p>
+          </div>
+        </details>
+        <details>
+          <summary>Access Control Policy</summary>
+          <div class="details-body">
+            <p><strong>Purpose:</strong> Makes sure people only have the access their job requires.</p>
+            <ul>
+              <li><strong>Least privilege</strong> and <strong>need-to-know</strong>.</li>
+              <li>Access is requested, approved and recorded. See the <a href="samples/sop-user-provisioning.html">user provisioning SOP</a>.</li>
+              <li>Administrators use a separate admin account for privileged work.</li>
+              <li>Access is reviewed regularly (e.g. quarterly) and removed on the day someone leaves.</li>
+            </ul>
+          </div>
+        </details>
+        <details>
+          <summary>Backup &amp; Recovery Policy</summary>
+          <div class="details-body">
+            <p><strong>Purpose:</strong> Makes sure data can be recovered after deletion, failure, ransomware or disaster.</p>
+            <ul>
+              <li>Follow the <strong>3-2-1 rule</strong>: 3 copies, on 2 different media, 1 off-site.</li>
+              <li>Define <abbr title="Recovery Point Objective">RPO</abbr> (how much data you can afford to lose) and <abbr title="Recovery Time Objective">RTO</abbr> (how fast you must recover).</li>
+              <li>Test restores regularly and record the result. See the <a href="samples/runbook-backup-restore.html">backup runbook</a>.</li>
+            </ul>
+          </div>
+        </details>
+        <details>
+          <summary>Patch &amp; Vulnerability Management Policy</summary>
+          <div class="details-body">
+            <p><strong>Purpose:</strong> Keeps systems protected against known vulnerabilities.</p>
+            <ul>
+              <li>Patch timeframes by severity (e.g. critical within 7 days, others within 30 days).</li>
+              <li>Test patches before production; schedule maintenance windows.</li>
+              <li>Track exceptions for systems that cannot be patched.</li>
+            </ul>
+          </div>
+        </details>
+        <details>
+          <summary>Change Management Policy</summary>
+          <div class="details-body">
+            <p><strong>Purpose:</strong> Prevents outages caused by unplanned or untested changes.</p>
+            <ul>
+              <li>Production changes need an approved change request with a test plan and a <strong>backout plan</strong>.</li>
+              <li>Major changes are reviewed by a <abbr title="Change Advisory Board">CAB</abbr>.</li>
+              <li>Emergency changes are documented afterwards. See the <a href="samples/change-request.html">change request sample</a>.</li>
+            </ul>
+          </div>
+        </details>
+        <details>
+          <summary>Incident Response Policy</summary>
+          <div class="details-body">
+            <p><strong>Purpose:</strong> Defines how security and service incidents are reported, handled and learned from.</p>
+            <ul>
+              <li>Who to contact, severity levels and escalation paths.</li>
+              <li>Phases: preparation → detection → containment → eradication → recovery → lessons learned.</li>
+              <li>Legal duties such as personal data breach notification. See the <a href="samples/incident-report.html">incident report sample</a>.</li>
+            </ul>
+          </div>
+        </details>
+        <details>
+          <summary>Data Classification &amp; Retention Policy</summary>
+          <div class="details-body">
+            <p><strong>Purpose:</strong> Defines how sensitive each type of data is, how long to keep it and how to dispose of it.</p>
+            <ul>
+              <li>Classes such as Public, Internal, Confidential and Restricted.</li>
+              <li>Retention periods (e.g. logs for 1 year, financial records as required by law).</li>
+              <li>Secure disposal: wipe or destroy media, for example following NIST SP 800-88.</li>
+            </ul>
+          </div>
+        </details>
+        <details>
+          <summary>Remote Work &amp; BYOD Policy</summary>
+          <div class="details-body">
+            <p><strong>Purpose:</strong> Sets rules for working outside the office and for personal devices (Bring Your Own Device).</p>
+            <ul>
+              <li>VPN required for internal systems; no public Wi-Fi without VPN.</li>
+              <li>Devices must have screen lock, updates and disk encryption.</li>
+              <li>The company can remotely wipe company data from a lost device.</li>
+            </ul>
+          </div>
+        </details>
+
+        <h2 id="policy-structure">Anatomy of a policy document</h2>
+        <p>Policies follow a standard structure so readers always know where to find things:</p>
+        <table>
+          <thead>
+            <tr><th>Section</th><th>What it answers</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Document control</td><td>ID, version, owner, approver, effective date, next review</td></tr>
+            <tr><td>Purpose</td><td>Why does this policy exist?</td></tr>
+            <tr><td>Scope</td><td>Who and what does it apply to?</td></tr>
+            <tr><td>Policy statements</td><td>What are the rules? (numbered, using “must”/“must not”)</td></tr>
+            <tr><td>Roles &amp; responsibilities</td><td>Who does what?</td></tr>
+            <tr><td>Compliance &amp; enforcement</td><td>What happens if the policy is broken?</td></tr>
+            <tr><td>Exceptions</td><td>How to request one, and who can approve it</td></tr>
+            <tr><td>Related documents &amp; definitions</td><td>Links to standards, procedures and the glossary</td></tr>
+            <tr><td>Revision history</td><td>What changed, when, and by whom</td></tr>
+          </tbody>
+        </table>
+
+        <h3 id="policy-example">Example: Password &amp; Authentication Policy (excerpt)</h3>
+        <div class="doc-control">
+          <div class="doc-control-title"><span>Document control</span><span class="badge badge-approved">Approved</span></div>
+          <dl>
+            <div><dt>Document ID</dt><dd>POL-SEC-002</dd></div>
+            <div><dt>Version</dt><dd>2.0</dd></div>
+            <div><dt>Owner</dt><dd>Information Security</dd></div>
+            <div><dt>Approved by</dt><dd>Chief Information Officer</dd></div>
+            <div><dt>Effective</dt><dd>2026-07-01</dd></div>
+            <div><dt>Next review</dt><dd>2027-07-01</dd></div>
+          </dl>
+        </div>
+        <p><strong>1. Purpose.</strong> This policy protects Example Corp systems and data from unauthorized access by setting minimum requirements for authentication.</p>
+        <p><strong>2. Scope.</strong> All employees, contractors and service accounts that access Example Corp systems.</p>
+        <p><strong>3. Policy statements.</strong></p>
+        <ul class="plain-list">
+          <li>3.1 Passwords <strong>must</strong> be at least 12 characters long.</li>
+          <li>3.2 Passwords <strong>must not</strong> appear on lists of known breached passwords. The system checks this automatically.</li>
+          <li>3.3 MFA <strong>must</strong> be used for administrator accounts, VPN and email.</li>
+          <li>3.4 Passwords <strong>must</strong> be changed immediately if compromise is suspected.</li>
+          <li>3.5 Users <strong>must not</strong> share passwords or write them down in unsecured locations.</li>
+        </ul>
+        <p><strong>4. Enforcement.</strong> Violations may lead to disciplinary action under the Code of Conduct.</p>
+        <p>Download a blank version from the <a href="templates.html#tpl-policy">policy template</a>.</p>
+
+        <h2 id="policy-lifecycle">The policy lifecycle</h2>
+        <ol class="steps">
+          <li><strong>Identify the need</strong>A new law, an audit finding, an incident or a new technology shows that a rule is needed.</li>
+          <li><strong>Draft</strong>The policy owner writes the policy using the standard template.</li>
+          <li><strong>Review</strong>IT, Information Security, HR and Legal review it for accuracy, fairness and legality.</li>
+          <li><strong>Approve</strong>Senior management signs it off. A policy without management approval has no authority.</li>
+          <li><strong>Communicate &amp; train</strong>Publish it where staff can find it, train them, and collect acknowledgments.</li>
+          <li><strong>Enforce &amp; monitor</strong>Apply it consistently, using technical controls where possible.</li>
+          <li><strong>Review</strong>Review at least once a year, or sooner if laws, systems or risks change.</li>
+        </ol>
+
+        <h2 id="compliance">What is compliance?</h2>
+        <p><strong>Compliance</strong> means meeting the requirements that apply to your organization, <em>and being able to prove it</em>. Requirements come from four places:</p>
+        <ul>
+          <li><strong>Laws and regulations</strong>, e.g. the Data Privacy Act of 2012, which are mandatory.</li>
+          <li><strong>Contracts</strong>, e.g. PCI DSS, if you accept credit cards.</li>
+          <li><strong>Voluntary standards</strong>, e.g. ISO/IEC 27001 certification to win customer trust.</li>
+          <li><strong>Internal policies</strong>, the organization's own rules.</li>
+        </ul>
+
+        <h2 id="laws-philippines">Philippine laws every sysadmin should know</h2>
+
+        <h3 id="data-privacy-act">Data Privacy Act of 2012 (Republic Act No. 10173)</h3>
+        <p>The main Philippine law protecting personal information. It is enforced by the <strong>National Privacy Commission (NPC)</strong>.</p>
+        <ul>
+          <li>Processing must follow the principles of <strong>transparency</strong>, <strong>legitimate purpose</strong> and <strong>proportionality</strong>.</li>
+          <li>Organizations must implement <strong>organizational, physical and technical security measures</strong>. Sysadmins implement most of the technical ones: access control, encryption, logging, backups and secure disposal.</li>
+          <li>Organizations must designate a <strong>Data Protection Officer (DPO)</strong>.</li>
+          <li>Data subjects have rights, including the right to be informed, to access, to object, to correct and to erasure or blocking of their data.</li>
+          <li>Under NPC rules, serious personal data breaches must be reported to the NPC and affected people <strong>within 72 hours</strong> of discovery.</li>
+        </ul>
+        <div class="callout warning">
+          <p class="callout-title">Why this matters to sysadmins</p>
+          <p>The Act sets criminal penalties, including imprisonment and fines that can reach millions of pesos. They cover acts such as unauthorized processing, access due to negligence, and <strong>concealing a security breach</strong>. Sysadmins usually discover breaches first, so knowing the reporting procedure is part of the job.</p>
+        </div>
+
+        <h3 id="cybercrime-act">Cybercrime Prevention Act of 2012 (Republic Act No. 10175)</h3>
+        <p>Defines and penalizes cybercrimes, including:</p>
+        <ul>
+          <li><strong>Illegal access</strong>: accessing a computer system without right. Administrators must stay within their authorization.</li>
+          <li><strong>Illegal interception</strong> of non-public data transmissions.</li>
+          <li><strong>Data interference</strong> and <strong>system interference</strong>: altering, deleting or hindering data or systems without right.</li>
+          <li><strong>Misuse of devices</strong>: possessing or distributing tools or passwords meant for committing these offenses.</li>
+        </ul>
+        <p>It also requires service providers to preserve traffic data and subscriber information for a minimum period, which affects log retention policies.</p>
+
+        <h3 id="ecommerce-act">Electronic Commerce Act of 2000 (Republic Act No. 8792)</h3>
+        <p>Gives electronic documents and signatures legal recognition. This is why properly controlled electronic records (logs, approvals, e-signed policies) can serve as evidence.</p>
+
+        <h2 id="international-frameworks">International standards and regulations</h2>
+        <table>
+          <thead>
+            <tr><th>Name</th><th>Type</th><th>Applies to</th><th>Key point</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>ISO/IEC 27001:2022</strong></td><td>International standard (certifiable)</td><td>Any organization</td><td>Requires an Information Security Management System (ISMS). Annex A lists 93 controls.</td></tr>
+            <tr><td><strong>NIST Cybersecurity Framework 2.0</strong></td><td>Voluntary framework</td><td>Any organization</td><td>Six functions: Govern, Identify, Protect, Detect, Respond, Recover.</td></tr>
+            <tr><td><strong>CIS Critical Security Controls v8.1</strong></td><td>Best-practice controls</td><td>Any organization</td><td>18 prioritized controls, starting with hardware and software inventories.</td></tr>
+            <tr><td><strong>GDPR</strong></td><td>EU regulation</td><td>Anyone processing personal data of people in the EU</td><td>Fines up to €20 million or 4% of global annual turnover.</td></tr>
+            <tr><td><strong>PCI DSS v4.x</strong></td><td>Industry standard (contractual)</td><td>Anyone handling payment card data</td><td>12 requirements for protecting cardholder data.</td></tr>
+            <tr><td><strong>HIPAA</strong></td><td>US law</td><td>US healthcare organizations and their partners</td><td>Protects patient health information.</td></tr>
+            <tr><td><strong>SOX</strong></td><td>US law</td><td>US-listed public companies</td><td>IT controls over financial reporting systems.</td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="documentation-evidence">How documentation proves compliance</h2>
+        <p>Auditors have a saying: <strong>“If it isn't documented, it didn't happen.”</strong> A policy only counts if you can produce evidence that it is followed.</p>
+        <table>
+          <thead>
+            <tr><th>Requirement</th><th>Evidence an auditor will ask for</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Users accept the AUP</td><td>Signed or e-signed acknowledgment records</td></tr>
+            <tr><td>Access is controlled</td><td>Approved access requests and quarterly access review records</td></tr>
+            <tr><td>Backups work</td><td>Backup job logs and documented restore tests (<a href="samples/runbook-backup-restore.html#restore-test">example</a>)</td></tr>
+            <tr><td>Changes are controlled</td><td>Approved change requests with test and backout plans (<a href="samples/change-request.html">example</a>)</td></tr>
+            <tr><td>Incidents are handled</td><td>Incident reports, breach assessments, notifications (<a href="samples/incident-report.html">example</a>)</td></tr>
+            <tr><td>Systems are patched</td><td>Patch reports and vulnerability scan results</td></tr>
+            <tr><td>Staff are trained</td><td>Training attendance and assessment records</td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="audits">Preparing for an IT audit</h2>
+        <p>An <strong>audit</strong> is an independent check that controls are designed well and actually work. <em>Internal</em> audits are done by the organization's own auditors; <em>external</em> audits by regulators, customers or certification bodies.</p>
+        <ol class="steps">
+          <li><strong>Know the scope and criteria</strong>Which systems, which period, and against which standard or law?</li>
+          <li><strong>Gather evidence</strong>Collect current policies, procedures, logs and records in one place.</li>
+          <li><strong>Self-assess</strong>Run a gap analysis, for example with the checklist below.</li>
+          <li><strong>Fix the gaps</strong>Write a corrective action plan with owners and due dates.</li>
+          <li><strong>During the audit</strong>Answer honestly, show the evidence, and never guess or invent records.</li>
+          <li><strong>After the audit</strong>Address the findings, document corrective actions and update your policies.</li>
+        </ol>
+
+        <h2 id="compliance-checklist">Compliance readiness checklist</h2>
+        <p>Try it: tick the items as you check them. Your progress is saved in this browser.</p>
+        <div class="checklist" data-checklist="compliance-readiness">
+          <div class="checklist-head"><strong>Example Corp: compliance self-assessment</strong></div>
+          <ul>
+            <li><label><input type="checkbox"><span>All IT policies are approved, dated and have a named owner</span></label></li>
+            <li><label><input type="checkbox"><span>Every user has accepted the Acceptable Use Policy</span></label></li>
+            <li><label><input type="checkbox"><span>A Data Protection Officer (DPO) is designated</span></label></li>
+            <li><label><input type="checkbox"><span>Personal data is inventoried: what data, where it is stored, who can access it</span></label></li>
+            <li><label><input type="checkbox"><span>User access is reviewed quarterly and leavers are removed on their last day</span></label></li>
+            <li><label><input type="checkbox"><span>MFA is enabled for administrators, VPN and email</span></label></li>
+            <li><label><input type="checkbox"><span>Backups run daily and a restore test is documented every month</span></label></li>
+            <li><label><input type="checkbox"><span>Every production change has an approved change request</span></label></li>
+            <li><label><input type="checkbox"><span>The incident response plan includes the 72-hour breach notification procedure</span></label></li>
+            <li><label><input type="checkbox"><span>Patches are applied within the timeframes in the patch policy</span></label></li>
+            <li><label><input type="checkbox"><span>Logs are retained and protected according to the retention policy</span></label></li>
+            <li><label><input type="checkbox"><span>All staff completed security and privacy awareness training this year</span></label></li>
+          </ul>
+        </div>
+
+        <h2 id="consequences">Consequences of non-compliance</h2>
+        <ul>
+          <li><strong>Legal:</strong> fines, lawsuits and, under the Data Privacy Act and Cybercrime Prevention Act, possible imprisonment.</li>
+          <li><strong>Financial:</strong> penalties, incident costs and lost business.</li>
+          <li><strong>Certification:</strong> loss of ISO certification or the right to process card payments.</li>
+          <li><strong>Reputation:</strong> customers and partners lose trust.</li>
+          <li><strong>Personal:</strong> disciplinary action against the individuals involved.</li>
+        </ul>
+
+        <h2 id="summary">Key takeaways</h2>
+        <ul>
+          <li>Policy (what/why) → Standard (specific rules) → Procedure (how) → Guideline (advice).</li>
+          <li>Every organization needs core policies: AUP, passwords, access, backup, patching, change, incident, data retention and remote work.</li>
+          <li>Policies follow a lifecycle and must be approved, communicated, enforced and reviewed.</li>
+          <li>In the Philippines, the Data Privacy Act (RA 10173) and Cybercrime Prevention Act (RA 10175) apply directly to sysadmin work.</li>
+          <li>Compliance is proven with <strong>documentation and records</strong>. If it isn't documented, it didn't happen.</li>
+        </ul>
+
+      </article>
+    </main>
+    <aside class="toc" id="toc" aria-label="On this page"></aside>
+  </div>
+  <script src="../assets/js/search-index.js"></script>
+  <script src="../assets/js/site.js"></script>
+</body>
+</html>

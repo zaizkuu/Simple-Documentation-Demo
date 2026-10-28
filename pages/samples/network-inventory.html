@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NET-001 Network &amp; Asset Inventory · SysAdmin Docs</title>
+  <meta name="description" content="Sample network and asset documentation: network diagram, VLAN and IP address plan, server inventory, software license register and naming conventions.">
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <script>try{var t=localStorage.getItem('docs-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+</head>
+<body data-root="../../" data-page="network" data-updated="2026-10-20" data-status="Approved" data-version="3.4">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <header class="topbar" id="topbar"></header>
+  <div class="layout">
+    <nav class="sidebar" id="sidebar" aria-label="Documentation"></nav>
+    <main class="content" id="content" tabindex="-1">
+      <article class="doc">
+
+        <header class="doc-header">
+          <p class="eyebrow">Reference Documentation</p>
+          <h1>Network &amp; Asset Inventory</h1>
+          <p class="lead">The map of Example Corp's IT environment: how the network is built, which addresses are used, which servers exist, and which software licenses we own.</p>
+        </header>
+
+        <div class="doc-control">
+          <div class="doc-control-title"><span>Document control</span><span class="badge badge-approved">Approved</span></div>
+          <dl>
+            <div><dt>Document ID</dt><dd>NET-001</dd></div>
+            <div><dt>Version</dt><dd>3.4</dd></div>
+            <div><dt>Owner</dt><dd>Network &amp; Systems Team</dd></div>
+            <div><dt>Last physical audit</dt><dd>2026-10-20</dd></div>
+            <div><dt>Next review</dt><dd>2027-01-20 (quarterly)</dd></div>
+            <div><dt>Classification</dt><dd>Confidential</dd></div>
+          </dl>
+        </div>
+
+        <div class="callout warning">
+          <p class="callout-title">Why “Confidential”?</p>
+          <p>A network map is as useful to an attacker as it is to an administrator. Share this document only with staff who need it, and never post it publicly.</p>
+        </div>
+
+        <h2 id="network-diagram">Network diagram</h2>
+        <figure>
+          <div class="diagram">
+            <svg viewBox="0 0 760 430" role="img" aria-labelledby="net-title net-desc">
+              <title id="net-title">Example Corp network diagram</title>
+              <desc id="net-desc">The internet connects to firewall fw-01, which also connects remote staff over VPN and off-site backup storage. The firewall connects to core switch sw-core-01, which serves four VLANs: VLAN 10 Servers, VLAN 20 Staff, VLAN 30 Guest Wi-Fi and VLAN 99 Management.</desc>
+
+              <!-- Internet -->
+              <rect class="dg-box" x="305" y="10" width="150" height="44" rx="22"/>
+              <text class="dg-text" x="380" y="30" text-anchor="middle">Internet</text>
+              <text class="dg-small" x="380" y="45" text-anchor="middle">ISP · 203.0.113.10</text>
+
+              <!-- Firewall -->
+              <rect class="dg-danger" x="305" y="88" width="150" height="48" rx="8"/>
+              <text class="dg-text" x="380" y="109" text-anchor="middle">fw-01</text>
+              <text class="dg-sub" x="380" y="126" text-anchor="middle">Firewall / VPN gateway</text>
+
+              <!-- Remote staff and off-site -->
+              <rect class="dg-box" x="20" y="88" width="170" height="48" rx="8" stroke-dasharray="6 4"/>
+              <text class="dg-text" x="105" y="109" text-anchor="middle">Remote staff</text>
+              <text class="dg-sub" x="105" y="126" text-anchor="middle">laptops via VPN</text>
+              <rect class="dg-box" x="570" y="88" width="170" height="48" rx="8" stroke-dasharray="6 4"/>
+              <text class="dg-text" x="655" y="109" text-anchor="middle">Off-site storage</text>
+              <text class="dg-sub" x="655" y="126" text-anchor="middle">encrypted backups</text>
+
+              <!-- Core switch -->
+              <rect class="dg-accent" x="305" y="170" width="150" height="48" rx="8"/>
+              <text class="dg-text" x="380" y="191" text-anchor="middle">sw-core-01</text>
+              <text class="dg-sub" x="380" y="208" text-anchor="middle">Core switch (Layer 3)</text>
+
+              <!-- Links -->
+              <line class="dg-line" x1="380" y1="54" x2="380" y2="88"/>
+              <line class="dg-line" x1="380" y1="136" x2="380" y2="170"/>
+              <line class="dg-dash" x1="190" y1="112" x2="305" y2="112"/>
+              <line class="dg-dash" x1="455" y1="112" x2="570" y2="112"/>
+              <text class="dg-small" x="247" y="105" text-anchor="middle">VPN</text>
+              <text class="dg-small" x="512" y="105" text-anchor="middle">HTTPS</text>
+              <path class="dg-line" d="M380 218 V240 M100 262 V240 H660 V262 M290 240 V262 M470 240 V262"/>
+              <text class="dg-small" x="395" y="234">802.1Q trunk</text>
+
+              <!-- VLAN 10 -->
+              <rect class="dg-accent" x="15" y="262" width="170" height="156" rx="8"/>
+              <text class="dg-text" x="100" y="284" text-anchor="middle">VLAN 10 · Servers</text>
+              <text class="dg-sub" x="100" y="301" text-anchor="middle">192.168.10.0/24</text>
+              <text class="dg-small" x="30" y="324">dc-01</text><text class="dg-small" x="120" y="324">.10</text>
+              <text class="dg-small" x="30" y="339">fs-01</text><text class="dg-small" x="120" y="339">.20</text>
+              <text class="dg-small" x="30" y="354">bkp-01</text><text class="dg-small" x="120" y="354">.30</text>
+              <text class="dg-small" x="30" y="369">lb-01</text><text class="dg-small" x="120" y="369">.40</text>
+              <text class="dg-small" x="30" y="384">web-01/02</text><text class="dg-small" x="120" y="384">.41/.42</text>
+              <text class="dg-small" x="30" y="399">srv-01</text><text class="dg-small" x="120" y="399">.50</text>
+
+              <!-- VLAN 20 -->
+              <rect class="dg-box" x="205" y="262" width="170" height="156" rx="8"/>
+              <text class="dg-text" x="290" y="284" text-anchor="middle">VLAN 20 · Staff</text>
+              <text class="dg-sub" x="290" y="301" text-anchor="middle">192.168.20.0/24</text>
+              <text class="dg-small" x="220" y="324">~120 PCs &amp; laptops</text>
+              <text class="dg-small" x="220" y="339">printers</text>
+              <text class="dg-small" x="220" y="354">DHCP .100–.250</text>
+
+              <!-- VLAN 30 -->
+              <rect class="dg-warn" x="395" y="262" width="170" height="156" rx="8"/>
+              <text class="dg-text" x="480" y="284" text-anchor="middle">VLAN 30 · Guest Wi-Fi</text>
+              <text class="dg-sub" x="480" y="301" text-anchor="middle">192.168.30.0/24</text>
+              <text class="dg-small" x="410" y="324">internet only</text>
+              <text class="dg-small" x="410" y="339">isolated from LAN</text>
+              <text class="dg-small" x="410" y="354">DHCP .50–.250</text>
+
+              <!-- VLAN 99 -->
+              <rect class="dg-tip" x="585" y="262" width="160" height="156" rx="8"/>
+              <text class="dg-text" x="665" y="284" text-anchor="middle">VLAN 99 · Mgmt</text>
+              <text class="dg-sub" x="665" y="301" text-anchor="middle">192.168.99.0/24</text>
+              <text class="dg-small" x="600" y="324">fw-01</text><text class="dg-small" x="690" y="324">.1</text>
+              <text class="dg-small" x="600" y="339">sw-core-01</text><text class="dg-small" x="690" y="339">.2</text>
+              <text class="dg-small" x="600" y="354">admin access only</text>
+            </svg>
+          </div>
+          <figcaption>Figure 1. Logical network diagram (NET-001, v3.4). The master copy is kept in <code>network/NET-001_Network-Diagram.drawio</code>.</figcaption>
+        </figure>
+
+        <h2 id="ip-plan">VLAN and IP address plan</h2>
+        <table>
+          <thead>
+            <tr><th>VLAN</th><th>Name</th><th>Subnet</th><th>Gateway</th><th>Addressing</th><th>Access rules</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>10</td><td>Servers</td><td><code>192.168.10.0/24</code></td><td>.1</td><td>Static</td><td>Staff may reach only published services (file, web, DNS)</td></tr>
+            <tr><td>20</td><td>Staff</td><td><code>192.168.20.0/24</code></td><td>.1</td><td>DHCP .100–.250</td><td>Internet + server services</td></tr>
+            <tr><td>30</td><td>Guest Wi-Fi</td><td><code>192.168.30.0/24</code></td><td>.1</td><td>DHCP .50–.250</td><td>Internet only; blocked from all internal VLANs</td></tr>
+            <tr><td>99</td><td>Management</td><td><code>192.168.99.0/24</code></td><td>.1</td><td>Static</td><td>Reachable only from IT admin workstations</td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="server-inventory">Server inventory</h2>
+        <table>
+          <thead>
+            <tr><th>Hostname</th><th>Role</th><th>OS / platform</th><th>IP address</th><th>Owner</th><th>Support until</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>fw-01</code></td><td>Firewall, VPN gateway</td><td>Firewall appliance</td><td>192.168.99.1</td><td>Network</td><td>2028-03</td></tr>
+            <tr><td><code>sw-core-01</code></td><td>Core switch</td><td>Managed L3 switch</td><td>192.168.99.2</td><td>Network</td><td>2029-06</td></tr>
+            <tr><td><code>dc-01</code></td><td>Domain controller, DNS, DHCP</td><td>Windows Server 2025</td><td>192.168.10.10</td><td>Systems</td><td>2029-11</td></tr>
+            <tr><td><code>fs-01</code></td><td>File server (Samba)</td><td>Ubuntu Server 24.04 LTS</td><td>192.168.10.20</td><td>Systems</td><td>2029-04</td></tr>
+            <tr><td><code>bkp-01</code></td><td>Backup server (NFS)</td><td>Ubuntu Server 24.04 LTS</td><td>192.168.10.30</td><td>Systems</td><td>2029-04</td></tr>
+            <tr><td><code>lb-01</code></td><td>Load balancer (HAProxy)</td><td>Ubuntu Server 24.04 LTS</td><td>192.168.10.40</td><td>Systems</td><td>2029-04</td></tr>
+            <tr><td><code>web-01</code></td><td>Web server (nginx)</td><td>Ubuntu Server 24.04 LTS</td><td>192.168.10.41</td><td>Web team</td><td>2029-04</td></tr>
+            <tr><td><code>web-02</code></td><td>Web server (nginx)</td><td>Ubuntu Server 24.04 LTS</td><td>192.168.10.42</td><td>Web team</td><td>2029-04</td></tr>
+            <tr><td><code>srv-01</code></td><td>Linux application server</td><td>Ubuntu Server 24.04 LTS</td><td>192.168.10.50</td><td>Systems</td><td>2029-04</td></tr>
+          </tbody>
+          <caption>“Support until” is the earlier of the hardware warranty and the OS standard support end date.</caption>
+        </table>
+
+        <h2 id="software-licenses">Software license register</h2>
+        <table>
+          <thead>
+            <tr><th>Software</th><th>License type</th><th>Owned</th><th>In use</th><th>Renewal</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Microsoft 365 Business Standard</td><td>Subscription, per user</td><td>130</td><td>121</td><td>2027-06-30</td></tr>
+            <tr><td>Windows Server 2025 Standard</td><td>Per core + client access licenses (CALs)</td><td>16 cores / 130 CALs</td><td>16 / 121</td><td>Perpetual</td></tr>
+            <tr><td>Endpoint protection (EDR)</td><td>Subscription, per device</td><td>140</td><td>128</td><td>2027-01-31</td></tr>
+            <tr><td>Ubuntu Server</td><td>Open source (free)</td><td>—</td><td>6 servers</td><td>N/A</td></tr>
+          </tbody>
+        </table>
+        <div class="callout tip">
+          <p class="callout-title">Tip</p>
+          <p>Compare “Owned” and “In use” every quarter. Using more than you own breaks license terms (see <a href="../ethics-in-sysadmin.html#licensing">Ethics: licensing</a>). Paying for far more than you use wastes money.</p>
+        </div>
+
+        <h2 id="naming">Naming conventions</h2>
+        <ul>
+          <li><strong>Hostnames:</strong> <code>role-NN</code>, lowercase, two-digit number, e.g. <code>web-01</code>.</li>
+          <li><strong>Network devices:</strong> <code>type-location-NN</code>, e.g. <code>sw-core-01</code>.</li>
+          <li><strong>Gateways:</strong> always <code>.1</code> in each subnet.</li>
+          <li><strong>Static server addresses:</strong> grouped by role in tens (<code>.10</code> directory, <code>.20</code> files, <code>.30</code> backup, <code>.40</code> web).</li>
+        </ul>
+
+        <h2 id="credentials">Credentials</h2>
+        <div class="callout danger">
+          <p class="callout-title">Credentials are not stored here</p>
+          <p>Administrator passwords and keys for every device above are stored in the password manager collection <strong>Infrastructure</strong>. Access is limited to the Network &amp; Systems Team and is logged.</p>
+        </div>
+
+        <h2 id="revision-history">Revision history</h2>
+        <table>
+          <thead>
+            <tr><th>Version</th><th>Date</th><th>Author</th><th>Change</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>3.2</td><td>2026-04-18</td><td>Network Engineer</td><td>Added VLAN 30 (Guest Wi-Fi)</td></tr>
+            <tr><td>3.3</td><td>2026-07-14</td><td>System Administrator</td><td>Added lb-01 and web-02 (load-balanced website)</td></tr>
+            <tr><td>3.4</td><td>2026-10-20</td><td>System Administrator</td><td>Quarterly audit: updated license counts and support dates; dc-01 upgraded to Windows Server 2025</td></tr>
+          </tbody>
+        </table>
+
+      </article>
+    </main>
+    <aside class="toc" id="toc" aria-label="On this page"></aside>
+  </div>
+  <script src="../../assets/js/search-index.js"></script>
+  <script src="../../assets/js/site.js"></script>
+</body>
+</html>

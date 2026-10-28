@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ethics in System Administration · SysAdmin Docs</title>
+  <meta name="description" content="Ethical issues in system administration: privacy, privileged access, confidentiality, honesty, licensing, conflicts of interest, codes of ethics, a decision framework and practice scenarios.">
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <script>try{var t=localStorage.getItem('docs-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+</head>
+<body data-root="../" data-page="ethics" data-updated="2026-10-28" data-status="Approved" data-version="1.0">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <header class="topbar" id="topbar"></header>
+  <div class="layout">
+    <nav class="sidebar" id="sidebar" aria-label="Documentation"></nav>
+    <main class="content" id="content" tabindex="-1">
+      <article class="doc">
+
+        <header class="doc-header">
+          <p class="eyebrow">Topic 3 of 3</p>
+          <h1>Ethical Issues in System Administration</h1>
+          <p class="lead">Administrators hold the “keys to the kingdom”. With root or domain admin rights you can read anyone's email, open any file, view browsing history and even edit the logs that record what you did. Ethics is about how you use that power when nobody is watching.</p>
+        </header>
+
+        <h2 id="why-ethics">Why ethics matters in system administration</h2>
+        <p>Most people can only do what their account allows. System administrators set the permissions, so technical controls alone cannot stop a dishonest admin. That is why organizations depend on the <strong>trust</strong> and <strong>professional integrity</strong> of their IT staff.</p>
+        <div class="compare">
+          <div>
+            <h4>Legal</h4>
+            <p>What the law requires or forbids, e.g. the Data Privacy Act and Cybercrime Prevention Act. Breaking it can lead to fines or prison.</p>
+          </div>
+          <div>
+            <h4>Ethical</h4>
+            <p>What is <em>right</em>, even when no law or policy covers the situation. Something can be legal and still be unethical.</p>
+          </div>
+        </div>
+        <div class="callout note">
+          <p class="callout-title">Note</p>
+          <p>“Can I do this?” is a technical question. “<em>Should</em> I do this?” is an ethical one. Sysadmins have to ask both.</p>
+        </div>
+
+        <h2 id="key-issues">Key ethical issues</h2>
+
+        <h3 id="privacy">1. Privacy and user monitoring</h3>
+        <p>Admins can technically see users' emails, files, chat messages and web history. Having the ability does not give you the right to use it.</p>
+        <div class="compare">
+          <div class="do">
+            <h4>Ethical practice</h4>
+            <ul>
+              <li>Access personal data only when your <strong>duties require it</strong>.</li>
+              <li>Monitor only what the <strong>AUP discloses</strong> and the law allows.</li>
+              <li>Collect the <strong>minimum</strong> data needed (proportionality).</li>
+              <li>Get <strong>written authorization</strong> before investigating a user.</li>
+            </ul>
+          </div>
+          <div class="dont">
+            <h4>Unethical practice</h4>
+            <ul>
+              <li>Reading a coworker's email out of curiosity.</li>
+              <li>Looking up a celebrity's or ex-partner's records.</li>
+              <li>Secretly installing monitoring software.</li>
+              <li>Sharing what you saw in users' files.</li>
+            </ul>
+          </div>
+        </div>
+
+        <h3 id="privileged-access">2. Abuse of privileged access</h3>
+        <p>Using admin rights for personal benefit or beyond your authorization: granting yourself access to HR or payroll data, bypassing controls “because it's faster”, or deleting log entries. Under the Cybercrime Prevention Act, accessing a system <em>without right</em> can be a crime even for an employee.</p>
+        <p><strong>Safeguards:</strong> least privilege, separate admin accounts, privileged access management (PAM), tamper-resistant logs sent to a separate server, and a “two-person rule” for the most sensitive actions.</p>
+
+        <h3 id="confidentiality">3. Confidentiality</h3>
+        <p>Admins regularly see confidential information: salaries, medical records, legal cases, business plans. It must not be disclosed, discussed or used for personal gain, even after you leave the organization. Many employers ask IT staff to sign a <strong>non-disclosure agreement (NDA)</strong>.</p>
+
+        <h3 id="honesty">4. Honesty and transparency</h3>
+        <p>Everyone makes mistakes: a wrong command, a missed backup, a misconfigured firewall. The ethical response is to <strong>admit it quickly</strong>, fix it, and document it so the team can learn. Hiding mistakes, falsifying reports or concealing a data breach makes the damage worse. Under the Data Privacy Act, concealing a breach is a crime.</p>
+        <div class="callout tip">
+          <p class="callout-title">Blameless culture</p>
+          <p>Good teams write <strong>blameless incident reports</strong> that focus on <em>what</em> failed and <em>how to prevent it</em>, not <em>who</em> to punish. This makes people more willing to report honestly. See the <a href="samples/incident-report.html">sample incident report</a>.</p>
+        </div>
+
+        <h3 id="licensing">5. Software licensing and intellectual property</h3>
+        <p>Installing unlicensed or pirated software, using one license on more machines than allowed, or ignoring open-source license terms is unethical and illegal, and the organization is liable. Admins should keep a <a href="samples/network-inventory.html#software-licenses">software license inventory</a> and refuse requests to install unlicensed software.</p>
+
+        <h3 id="conflicts">6. Conflicts of interest</h3>
+        <p>A conflict of interest exists when personal interests could influence professional decisions. Examples include accepting gifts from vendors, recommending a friend's company, or choosing a product because you get a commission. Disclose conflicts, follow the gift policy, and make purchasing decisions on <strong>documented criteria</strong>.</p>
+
+        <h3 id="pressure">7. Pressure from management</h3>
+        <p>Sometimes the unethical request comes from above: “Delete those logs before the auditors arrive.” “Give me access to my team's private messages.” “Don't tell customers about the breach.” Following orders does not remove your responsibility.</p>
+        <ul>
+          <li>Ask for the request <strong>in writing</strong> and check it against policy and law.</li>
+          <li>Escalate through proper channels: your manager's manager, HR, Legal, Compliance or the DPO.</li>
+          <li>Use the organization's <strong>whistleblowing</strong> procedure if internal channels fail.</li>
+        </ul>
+
+        <h3 id="competence">8. Professional competence and due care</h3>
+        <p>It is unethical to accept work you are not qualified to do without saying so, to skip testing, or to make risky changes without approval. Admins have a duty to keep their skills current, follow change management, and be honest about what they don't know.</p>
+
+        <h3 id="ai-tools">9. Emerging issues: AI tools and workplace surveillance</h3>
+        <ul>
+          <li><strong>AI assistants:</strong> pasting logs, configuration files or customer data into a public AI chatbot can disclose personal data and secrets to a third party. Use only approved tools, and remove sensitive data first.</li>
+          <li><strong>Employee monitoring software</strong> (screen capture, keystroke logging, productivity scoring) raises serious privacy concerns. It must be lawful, proportionate, disclosed and approved, and should not be secretly configured by IT.</li>
+          <li><strong>Automation:</strong> scripts and bots act with the admin's authority, so their actions are still the admin's responsibility.</li>
+        </ul>
+
+        <h3 id="social">10. Social and environmental responsibility</h3>
+        <ul>
+          <li><strong>Secure disposal:</strong> wipe or destroy drives before disposal or donation so that old data doesn't leak.</li>
+          <li><strong>E-waste:</strong> recycle equipment through accredited handlers instead of dumping it.</li>
+          <li><strong>Accessibility:</strong> make systems and documentation usable by people with disabilities.</li>
+        </ul>
+
+        <h2 id="codes-of-ethics">Professional codes of ethics</h2>
+        <p>Professional organizations publish codes of ethics to guide practitioners. They are not laws, but employers and peers expect professionals to follow them.</p>
+
+        <h3 id="sage-code">The System Administrators' Code of Ethics</h3>
+        <p>Originally written by SAGE (USENIX's system administrators' group) and later adopted by LOPSA (the League of Professional System Administrators), this code has ten principles:</p>
+        <table>
+          <thead>
+            <tr><th>Principle</th><th>In short</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Professionalism</strong></td><td>Treat everyone fairly. Don't let personal feelings affect how you treat people.</td></tr>
+            <tr><td><strong>Personal integrity</strong></td><td>Be honest about your skills and your mistakes. Avoid or disclose conflicts of interest.</td></tr>
+            <tr><td><strong>Privacy</strong></td><td>Access private information only when your duties require it, and protect its confidentiality.</td></tr>
+            <tr><td><strong>Laws and policies</strong></td><td>Learn the laws and policies that apply to your work, and help others learn them.</td></tr>
+            <tr><td><strong>Communication</strong></td><td>Keep management, users and colleagues informed. Listen to their needs.</td></tr>
+            <tr><td><strong>System integrity</strong></td><td>Keep systems reliable, available and fit for their purpose.</td></tr>
+            <tr><td><strong>Education</strong></td><td>Keep improving your skills and share your knowledge.</td></tr>
+            <tr><td><strong>Responsibility to the computing community</strong></td><td>Cooperate with others to keep networks and computing resources healthy.</td></tr>
+            <tr><td><strong>Social responsibility</strong></td><td>Support sound policies and laws that reflect these principles.</td></tr>
+            <tr><td><strong>Ethical responsibility</strong></td><td>Build a safe, healthy workplace. Report risks, give and accept honest criticism, and credit others' work.</td></tr>
+          </tbody>
+        </table>
+
+        <h3 id="acm-code">ACM Code of Ethics and Professional Conduct</h3>
+        <p>The Association for Computing Machinery's code (updated 2018) applies to all computing professionals. Its general principles include: contribute to society and human well-being, <strong>avoid harm</strong>, be honest and trustworthy, be fair and don't discriminate, respect the work required to produce new ideas, <strong>respect privacy</strong>, and <strong>honor confidentiality</strong>.</p>
+
+        <h3 id="isc2-code">ISC2 Code of Ethics</h3>
+        <p>For security professionals (e.g. CISSP holders), it has four canons: protect society and the infrastructure; act honorably, honestly, justly, responsibly and legally; provide diligent and competent service; and advance and protect the profession.</p>
+
+        <h2 id="decision-framework">A framework for ethical decisions</h2>
+        <p>When you face a difficult situation, work through it step by step instead of acting on impulse:</p>
+        <ol class="steps">
+          <li><strong>Identify the issue</strong>What exactly is being asked or is happening? Whose interests are involved?</li>
+          <li><strong>Check policy and law</strong>What do the AUP, other company policies, the Data Privacy Act and the Cybercrime Act say?</li>
+          <li><strong>Identify the stakeholders</strong>Users, the organization, customers, colleagues, the public, and you.</li>
+          <li><strong>Consider the options</strong>List at least three possible actions and the likely consequences of each.</li>
+          <li><strong>Consult</strong>Talk to your supervisor, HR, Legal, the DPO or a trusted senior colleague. Use the codes of ethics.</li>
+          <li><strong>Act and document</strong>Choose the most defensible option, then <strong>write down</strong> what you decided, why, and who approved it.</li>
+          <li><strong>Reflect</strong>Afterwards, consider whether a policy or procedure should change to prevent the dilemma next time.</li>
+        </ol>
+
+        <h3 id="quick-tests">Quick tests</h3>
+        <table>
+          <thead>
+            <tr><th>Test</th><th>Ask yourself</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Front-page test</strong></td><td>Would I be comfortable if this appeared in the news with my name on it?</td></tr>
+            <tr><td><strong>Audit-log test</strong></td><td>Would I be comfortable if my manager reviewed the log of exactly what I did?</td></tr>
+            <tr><td><strong>Policy test</strong></td><td>Is this clearly allowed by a written, approved policy?</td></tr>
+            <tr><td><strong>Reversal test</strong></td><td>How would I feel if someone did this to <em>my</em> data or account?</td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="scenarios">Scenarios: what would you do?</h2>
+        <p>Use these with the class. Choose an answer to see the discussion.</p>
+
+        <div class="quiz">
+          <p class="quiz-label">Scenario 1 · Privacy</p>
+          <p class="quiz-q">Your manager asks you to quietly open an employee's mailbox because they suspect the employee is job hunting. There is no written request.</p>
+          <div class="quiz-options">
+            <button type="button">A. Do it. Your manager is your boss.</button>
+            <button type="button" data-correct>B. Politely decline until there is a written request approved through HR/Legal under the policy, and make a note of the request.</button>
+            <button type="button">C. Warn the employee that their manager is checking on them.</button>
+          </div>
+          <div class="quiz-feedback" hidden>
+            <p>Mailbox access must have a legitimate purpose and be authorized under the AUP and the law. Job hunting is not a valid reason, and accessing the mailbox without authorization could violate the Data Privacy Act. A written, approved request protects everyone, including you. Warning the employee would breach confidentiality.</p>
+          </div>
+        </div>
+
+        <div class="quiz">
+          <p class="quiz-label">Scenario 2 · Policy violation</p>
+          <p class="quiz-q">While cleaning up disk space on the file server, you notice a coworker's folder full of pirated movies.</p>
+          <div class="quiz-options">
+            <button type="button">A. Ignore it. It's not your business.</button>
+            <button type="button">B. Delete the files yourself and say nothing.</button>
+            <button type="button" data-correct>C. Stop browsing, note the location (without opening or copying the files), and report it through the channel the AUP specifies.</button>
+          </div>
+          <div class="quiz-feedback" hidden>
+            <p>You found it while doing legitimate work, and it violates the AUP and copyright law, which creates risk for the organization. Report it through the proper channel and let the authorized people decide. Deleting the files yourself could destroy evidence, and investigating further is outside your role.</p>
+          </div>
+        </div>
+
+        <div class="quiz">
+          <p class="quiz-label">Scenario 3 · Honesty</p>
+          <p class="quiz-q">You accidentally deleted a shared department folder. Last night's backup exists and nobody has noticed yet.</p>
+          <div class="quiz-options">
+            <button type="button">A. Restore it quietly. No harm done.</button>
+            <button type="button" data-correct>B. Restore it, tell your supervisor and the affected users, and write a short incident report.</button>
+            <button type="button">C. Restore it and blame a sync error if anyone asks.</button>
+          </div>
+          <div class="quiz-feedback" hidden>
+            <p>The backup is from <em>last night</em>, so any work saved today is lost. Users need to know so they can redo it. Being honest about mistakes is a core principle of the sysadmin code of ethics. A blameless incident report also helps prevent it happening again, for example by adding a confirmation step to the procedure.</p>
+          </div>
+        </div>
+
+        <div class="quiz">
+          <p class="quiz-label">Scenario 4 · Conflict of interest</p>
+          <p class="quiz-q">A backup software vendor offers you a free smartphone if you recommend their product to management.</p>
+          <div class="quiz-options">
+            <button type="button">A. Accept. It won't change your opinion.</button>
+            <button type="button" data-correct>B. Decline (or disclose it under the gift policy) and evaluate all products against documented criteria.</button>
+            <button type="button">C. Accept and recommend them. Everyone does it.</button>
+          </div>
+          <div class="quiz-feedback" hidden>
+            <p>Even if your judgment isn't affected, accepting creates a conflict of interest and damages trust. Follow the gift and conflict-of-interest policy, and base your recommendation on a documented comparison (cost, features, support, security) that others can review.</p>
+          </div>
+        </div>
+
+        <div class="quiz">
+          <p class="quiz-label">Scenario 5 · AI tools</p>
+          <p class="quiz-q">You are troubleshooting an error and want to paste a server log into a public AI chatbot. The log contains customer names, email addresses and an API token.</p>
+          <div class="quiz-options">
+            <button type="button">A. Paste the whole log. It's the fastest way.</button>
+            <button type="button">B. Paste it, but delete the chat history afterwards.</button>
+            <button type="button" data-correct>C. Remove or mask the personal data and secrets first, and use only an AI tool your organization has approved.</button>
+          </div>
+          <div class="quiz-feedback" hidden>
+            <p>Sending personal data to an unapproved third party is a disclosure under the Data Privacy Act, and a leaked API token is a security incident. Deleting the chat afterwards doesn't undo the disclosure. Mask the data, revoke the token if it was exposed, and follow your organization's AI use policy.</p>
+          </div>
+        </div>
+
+        <h2 id="documentation-ethics">How documentation supports ethical practice</h2>
+        <p>This topic links back to the other two. Documentation makes ethical behaviour easier and provable:</p>
+        <ul>
+          <li><strong>Written policies</strong> make expectations clear, so admins know what they may and may not do.</li>
+          <li><strong>Written authorizations</strong> (e.g. for accessing a mailbox) protect the admin and the user.</li>
+          <li><strong>Logs and change records</strong> provide accountability and deter abuse.</li>
+          <li><strong>Honest incident reports</strong> turn mistakes into improvements.</li>
+          <li><strong>Documented decision criteria</strong> prevent conflicts of interest from influencing purchases.</li>
+        </ul>
+
+        <h2 id="summary">Key takeaways</h2>
+        <ul>
+          <li>Admin access means power, and power requires trust and integrity.</li>
+          <li>The main issues are privacy, privileged access, confidentiality, honesty, licensing, conflicts of interest and pressure from management.</li>
+          <li>Follow professional codes such as the System Administrators' Code of Ethics and the ACM Code.</li>
+          <li>Use a structured framework for hard decisions, and <strong>document</strong> what you decided and why.</li>
+        </ul>
+
+      </article>
+    </main>
+    <aside class="toc" id="toc" aria-label="On this page"></aside>
+  </div>
+  <script src="../assets/js/search-index.js"></script>
+  <script src="../assets/js/site.js"></script>
+</body>
+</html>

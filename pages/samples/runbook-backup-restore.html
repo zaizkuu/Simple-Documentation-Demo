@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RB-BKP-002 Nightly Backup &amp; Restore · SysAdmin Docs</title>
+  <meta name="description" content="Sample runbook for the nightly file server backup: how it works, daily checks, restoring files, full restore, restore tests, troubleshooting and escalation.">
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <script>try{var t=localStorage.getItem('docs-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+</head>
+<body data-root="../../" data-page="runbook" data-updated="2026-10-15" data-status="Approved" data-version="2.1">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <header class="topbar" id="topbar"></header>
+  <div class="layout">
+    <nav class="sidebar" id="sidebar" aria-label="Documentation"></nav>
+    <main class="content" id="content" tabindex="-1">
+      <article class="doc">
+
+        <header class="doc-header">
+          <p class="eyebrow">Runbook</p>
+          <h1>Nightly File Server Backup &amp; Restore</h1>
+          <p class="lead">Operational guide for the on-call administrator: how the <code>fs-01</code> backup works, how to check it, how to restore data, and what to do when it fails.</p>
+        </header>
+
+        <div class="doc-control">
+          <div class="doc-control-title"><span>Document control</span><span class="badge badge-approved">Approved</span></div>
+          <dl>
+            <div><dt>Document ID</dt><dd>RB-BKP-002</dd></div>
+            <div><dt>Version</dt><dd>2.1</dd></div>
+            <div><dt>Owner</dt><dd>IT Operations</dd></div>
+            <div><dt>Service</dt><dd>File server (fs-01)</dd></div>
+            <div><dt>Last restore test</dt><dd>2026-10-15</dd></div>
+            <div><dt>Next review</dt><dd>2027-04-15</dd></div>
+            <div><dt>Classification</dt><dd>Internal</dd></div>
+          </dl>
+        </div>
+
+        <h2 id="overview">Service overview</h2>
+        <table>
+          <tbody>
+            <tr><th scope="row">Protected server</th><td><code>fs-01</code> (192.168.10.20), Ubuntu Server 24.04 LTS, Samba file shares</td></tr>
+            <tr><th scope="row">Data backed up</th><td><code>/srv/data</code>: department shared folders (about 180 GB)</td></tr>
+            <tr><th scope="row">Backup target</th><td><code>bkp-01</code> (192.168.10.30), mounted on fs-01 at <code>/mnt/backups</code></td></tr>
+            <tr><th scope="row">Off-site copy</th><td>Encrypted cloud object storage, copied nightly at 03:00</td></tr>
+            <tr><th scope="row">Schedule</th><td>Every day at 01:30</td></tr>
+            <tr><th scope="row">Retention</th><td>14 days on bkp-01 · 90 days off-site</td></tr>
+            <tr><th scope="row">RPO / RTO</th><td>24 hours / 4 hours</td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="how-it-works">How the backup works</h2>
+        <figure>
+          <div class="diagram">
+            <svg viewBox="0 0 760 150" role="img" aria-labelledby="bk-title bk-desc">
+              <title id="bk-title">Backup data flow</title>
+              <desc id="bk-desc">fs-01 creates a compressed archive with a checksum at 01:30 on bkp-01, which keeps 14 days. At 03:00 bkp-01 copies new archives, encrypted, to off-site storage, which keeps 90 days.</desc>
+              <defs>
+                <marker id="bk-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                  <path d="M0,0 L10,5 L0,10 z" class="dg-arrowhead"/>
+                </marker>
+              </defs>
+              <rect class="dg-accent" x="10" y="45" width="170" height="70" rx="10"/>
+              <text class="dg-text" x="95" y="74" text-anchor="middle">fs-01</text>
+              <text class="dg-sub" x="95" y="94" text-anchor="middle">/srv/data (source)</text>
+
+              <rect class="dg-tip" x="295" y="45" width="170" height="70" rx="10"/>
+              <text class="dg-text" x="380" y="74" text-anchor="middle">bkp-01</text>
+              <text class="dg-sub" x="380" y="94" text-anchor="middle">keeps 14 days</text>
+
+              <rect class="dg-box" x="580" y="45" width="170" height="70" rx="10" stroke-dasharray="6 4"/>
+              <text class="dg-text" x="665" y="74" text-anchor="middle">Off-site storage</text>
+              <text class="dg-sub" x="665" y="94" text-anchor="middle">encrypted · 90 days</text>
+
+              <line class="dg-line" x1="180" y1="80" x2="292" y2="80" marker-end="url(#bk-arrow)"/>
+              <line class="dg-line" x1="465" y1="80" x2="577" y2="80" marker-end="url(#bk-arrow)"/>
+              <text class="dg-sub" x="237" y="68" text-anchor="middle">01:30</text>
+              <text class="dg-small" x="237" y="102" text-anchor="middle">tar + sha256</text>
+              <text class="dg-sub" x="522" y="68" text-anchor="middle">03:00</text>
+              <text class="dg-small" x="522" y="102" text-anchor="middle">encrypted copy</text>
+              <text class="dg-sub" x="380" y="140" text-anchor="middle">3-2-1 rule: 3 copies · 2 different media · 1 off-site</text>
+            </svg>
+          </div>
+          <figcaption>Figure 1. Backup data flow for fs-01.</figcaption>
+        </figure>
+
+        <p>The backup is a shell script run by cron. It creates a dated, compressed archive, records a SHA-256 checksum so corruption can be detected, and deletes archives older than 14 days.</p>
+
+<pre data-title="/usr/local/sbin/nightly-backup.sh"><code class="language-bash">#!/usr/bin/env bash
+# Nightly backup of /srv/data on fs-01. Documented in RB-BKP-002.
+set -euo pipefail
+
+STAMP="$(date +%F)"                  # e.g. 2026-10-28
+DEST="/mnt/backups/fs-01"            # NFS share on bkp-01
+ARCHIVE="$DEST/fs-01-data-$STAMP.tar.gz"
+LOG="/var/log/backup/nightly-$STAMP.log"
+
+{
+  echo "[$(date '+%F %T')] Backup started"
+  tar -czf "$ARCHIVE" -C /srv data
+  sha256sum "$ARCHIVE" > "$ARCHIVE.sha256"
+  find "$DEST" -name 'fs-01-data-*' -mtime +14 -delete
+  echo "[$(date '+%F %T')] Backup finished ($(du -h "$ARCHIVE" | cut -f1))"
+} >> "$LOG" 2>&1</code></pre>
+
+<pre data-title="/etc/cron.d/nightly-backup"><code class="language-cron"># min hour day month weekday  user  command
+30    1    *   *     *        root  /usr/local/sbin/nightly-backup.sh</code></pre>
+
+        <h2 id="daily-check">Daily check (every morning)</h2>
+        <ol class="steps">
+          <li><strong>Confirm last night's backup finished.</strong>
+<pre><code class="language-bash">tail -n 2 /var/log/backup/nightly-$(date +%F).log</code></pre>
+            Expected: a line ending in <code>Backup finished (…G)</code>.
+          </li>
+          <li><strong>Check that the archive exists and its size looks normal (about 60–70 GB compressed).</strong>
+<pre><code class="language-bash">ls -lh /mnt/backups/fs-01/ | tail -n 4</code></pre>
+          </li>
+          <li><strong>Verify the checksum.</strong>
+<pre><code class="language-bash">sha256sum -c /mnt/backups/fs-01/fs-01-data-$(date +%F).tar.gz.sha256</code></pre>
+            Expected: <code>/mnt/backups/fs-01/fs-01-data-2026-10-28.tar.gz: OK</code>
+          </li>
+          <li><strong>Record the result</strong>in the daily operations log (ticket queue “Backups”).</li>
+        </ol>
+
+        <h2 id="restore-file">Restore a single file or folder</h2>
+        <div class="callout note">
+          <p class="callout-title">Before you start</p>
+          <p>Confirm the request comes from someone who is <strong>allowed to access</strong> that data. Restoring a file for someone without access would be a privacy violation (see <a href="../ethics-in-sysadmin.html#privacy">Ethics: privacy</a>).</p>
+        </div>
+        <ol class="steps">
+          <li><strong>Find the archive from before the file was lost.</strong>
+<pre><code class="language-bash">ls /mnt/backups/fs-01/</code></pre>
+          </li>
+          <li><strong>Confirm the file is in the archive.</strong>
+<pre><code class="language-bash">tar -tzf /mnt/backups/fs-01/fs-01-data-2026-10-27.tar.gz | grep 'finance/budget-2026.xlsx'</code></pre>
+          </li>
+          <li><strong>Extract it to a temporary folder.</strong>
+<pre><code class="language-bash">mkdir -p /tmp/restore
+tar -xzf /mnt/backups/fs-01/fs-01-data-2026-10-27.tar.gz -C /tmp/restore data/finance/budget-2026.xlsx</code></pre>
+          </li>
+          <li><strong>Copy it back under a new name so nothing newer is overwritten.</strong>
+<pre><code class="language-bash">sudo cp -p /tmp/restore/data/finance/budget-2026.xlsx \
+  /srv/data/finance/budget-2026.restored-2026-10-27.xlsx
+rm -rf /tmp/restore</code></pre>
+          </li>
+          <li><strong>Tell the user</strong>where the restored file is, and close the ticket.</li>
+        </ol>
+        <div class="callout warning">
+          <p class="callout-title">Warning</p>
+          <p>Never extract an archive directly over <code>/srv/data</code>. It overwrites every newer file in the share.</p>
+        </div>
+
+        <h2 id="full-restore">Full restore (disaster recovery)</h2>
+        <p>Use this only when fs-01 or its data is lost. Target: service restored within the <strong>4-hour RTO</strong>.</p>
+        <ol class="steps">
+          <li><strong>Declare an incident</strong>and notify the IT Manager. Open an incident record.</li>
+          <li><strong>Build or repair the server</strong>using the fs-01 build document, with the same hostname and IP.</li>
+          <li><strong>Mount the backup share and verify the latest archive.</strong>
+<pre><code class="language-bash">sudo mount -a
+sha256sum -c /mnt/backups/fs-01/fs-01-data-2026-10-28.tar.gz.sha256</code></pre>
+            If bkp-01 is also lost, retrieve the archive from off-site storage (RB-BKP-003).
+          </li>
+          <li><strong>Restore the data.</strong>
+<pre><code class="language-bash">sudo tar -xzf /mnt/backups/fs-01/fs-01-data-2026-10-28.tar.gz -C /srv</code></pre>
+          </li>
+          <li><strong>Start the file sharing service and test from a client PC.</strong>
+<pre><code class="language-bash">sudo systemctl restart smbd
+systemctl is-active smbd</code></pre>
+          </li>
+          <li><strong>Notify users</strong>that service is back and that changes made after the backup time may need to be redone. Then complete the incident report.</li>
+        </ol>
+
+        <h2 id="restore-test">Monthly restore test</h2>
+        <div class="callout tip">
+          <p class="callout-title">Why we test</p>
+          <p>A backup that has never been restored is only a hope. Each month, restore sample files to a test folder and record the result here. Auditors will ask for this evidence.</p>
+        </div>
+        <table>
+          <thead>
+            <tr><th>Date</th><th>Archive</th><th>What was restored</th><th>Time</th><th>Result</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>2026-10-15</td><td><code>…2026-10-14.tar.gz</code></td><td>20 random files, 3 folders</td><td>6 min</td><td><span class="badge badge-approved">Pass</span></td></tr>
+            <tr><td>2026-09-15</td><td><code>…2026-09-14.tar.gz</code></td><td>Full restore to test VM</td><td>2 h 10 min</td><td><span class="badge badge-approved">Pass</span></td></tr>
+            <tr><td>2026-08-14</td><td><code>…2026-08-13.tar.gz</code></td><td>20 random files</td><td>—</td><td><span class="badge badge-danger">Fail</span> checksum mismatch, see INC-2026-0117</td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="troubleshooting">Troubleshooting</h2>
+        <table>
+          <thead>
+            <tr><th>Symptom</th><th>Likely cause</th><th>Action</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>No log file for today</td><td>Cron did not run, or fs-01 was down at 01:30</td><td>Check <code>systemctl status cron</code> and <code>grep CRON /var/log/syslog</code>. Run the script manually with <code>sudo</code>.</td></tr>
+            <tr><td><code>No space left on device</code> in the log</td><td>The backup volume on bkp-01 is full</td><td>Check <code>df -h /mnt/backups</code>. Confirm old archives were deleted. Escalate to L2.</td></tr>
+            <tr><td><code>computed checksum did NOT match</code></td><td>The archive is corrupted</td><td>Do not rely on that archive. Re-run the backup and open an incident.</td></tr>
+            <tr><td><code>Stale file handle</code> or <code>/mnt/backups</code> is empty</td><td>The NFS mount to bkp-01 dropped</td><td>Check with <code>findmnt /mnt/backups</code>, remount with <code>sudo mount -a</code>, and check that bkp-01 is up.</td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="escalation">Escalation</h2>
+        <table>
+          <thead>
+            <tr><th>Level</th><th>Who</th><th>When</th><th>Contact</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>L1</td><td>On-call system administrator</td><td>Any backup alert</td><td>On-call roster in the ITSM tool</td></tr>
+            <tr><td>L2</td><td>Senior system administrator</td><td>Not fixed within 1 hour, or two failed backups in a row</td><td>ext. 1204</td></tr>
+            <tr><td>L3</td><td>IT Manager</td><td>Data loss, or restore will exceed the 4-hour RTO</td><td>ext. 1200</td></tr>
+            <tr><td>DPO</td><td>Data Protection Officer</td><td>Personal data may be lost or exposed</td><td>dpo@corp.example.com</td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="related">Related documents</h2>
+        <ul>
+          <li>Backup &amp; Recovery Policy (<a href="../it-policies-compliance.html#core-policies">summary</a>)</li>
+          <li>RB-BKP-003 Off-site Backup Retrieval</li>
+          <li>NET-001 Network &amp; Asset Inventory (<a href="network-inventory.html">sample</a>)</li>
+          <li>INC-2026-0142 File Server Outage (<a href="incident-report.html">sample</a>)</li>
+        </ul>
+
+        <h2 id="revision-history">Revision history</h2>
+        <table>
+          <thead>
+            <tr><th>Version</th><th>Date</th><th>Author</th><th>Change</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1.0</td><td>2025-06-02</td><td>System Administrator</td><td>First approved version</td></tr>
+            <tr><td>2.0</td><td>2026-03-10</td><td>Senior System Administrator</td><td>Added off-site copy and SHA-256 checksums; retention changed to 14 days</td></tr>
+            <tr><td>2.1</td><td>2026-10-15</td><td>System Administrator</td><td>Added NFS troubleshooting row and the October restore test result</td></tr>
+          </tbody>
+        </table>
+
+      </article>
+    </main>
+    <aside class="toc" id="toc" aria-label="On this page"></aside>
+  </div>
+  <script src="../../assets/js/search-index.js"></script>
+  <script src="../../assets/js/site.js"></script>
+</body>
+</html>

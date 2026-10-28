@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SOP-ACC-001 New User Account Provisioning · SysAdmin Docs</title>
+  <meta name="description" content="Sample standard operating procedure for creating a new user account on Linux and Windows Active Directory, with verification, troubleshooting and rollback.">
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <script>try{var t=localStorage.getItem('docs-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+</head>
+<body data-root="../../" data-page="sop" data-updated="2026-09-01" data-status="Approved" data-version="1.2">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <header class="topbar" id="topbar"></header>
+  <div class="layout">
+    <nav class="sidebar" id="sidebar" aria-label="Documentation"></nav>
+    <main class="content" id="content" tabindex="-1">
+      <article class="doc">
+
+        <header class="doc-header">
+          <p class="eyebrow">Standard Operating Procedure</p>
+          <h1>New User Account Provisioning</h1>
+          <p class="lead">How to create a user account for a new employee or contractor on Example Corp's Linux servers and Windows Active Directory domain.</p>
+        </header>
+
+        <div class="doc-control">
+          <div class="doc-control-title"><span>Document control</span><span class="badge badge-approved">Approved</span></div>
+          <dl>
+            <div><dt>Document ID</dt><dd>SOP-ACC-001</dd></div>
+            <div><dt>Version</dt><dd>1.2</dd></div>
+            <div><dt>Owner</dt><dd>IT Operations</dd></div>
+            <div><dt>Author</dt><dd>System Administrator</dd></div>
+            <div><dt>Reviewed by</dt><dd>Senior System Administrator</dd></div>
+            <div><dt>Approved by</dt><dd>IT Manager</dd></div>
+            <div><dt>Effective date</dt><dd>2026-09-01</dd></div>
+            <div><dt>Next review</dt><dd>2027-09-01</dd></div>
+            <div><dt>Classification</dt><dd>Internal</dd></div>
+          </dl>
+        </div>
+
+        <h2 id="purpose">1. Purpose</h2>
+        <p>This procedure makes sure every new account is <strong>approved</strong>, created <strong>consistently</strong>, given only the <strong>access the person needs</strong>, and <strong>recorded</strong>. It implements the Password &amp; Authentication Policy (POL-SEC-002) and the Access Control Policy (POL-SEC-003).</p>
+
+        <h2 id="scope">2. Scope</h2>
+        <ul>
+          <li><strong>In scope:</strong> standard user accounts for employees and contractors on Linux servers (Ubuntu Server 24.04 LTS) and the Windows Active Directory domain <code>corp.example.com</code>.</li>
+          <li><strong>Out of scope:</strong> administrator accounts and service accounts. These need separate approval from the IT Manager (SOP-ACC-004).</li>
+        </ul>
+
+        <h2 id="roles">3. Roles and responsibilities</h2>
+        <table>
+          <thead>
+            <tr><th>Role</th><th>Responsibility</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>HR</td><td>Confirms employment and start date; opens the new-hire request.</td></tr>
+            <tr><td>Department head</td><td>Approves which systems and groups the person needs.</td></tr>
+            <tr><td>System administrator</td><td>Creates the account by following this SOP and records the work in the ticket.</td></tr>
+            <tr><td>Service desk</td><td>Gives the user their temporary password and helps with first login.</td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="prerequisites">4. Prerequisites</h2>
+        <p>Do not start until <strong>all</strong> of these are true:</p>
+        <ul>
+          <li>There is an <strong>approved access request</strong> ticket (e.g. <code>REQ-2026-0311</code>) listing the required groups.</li>
+          <li>HR has confirmed the employment and start date.</li>
+          <li>The user has accepted the <a href="../it-policies-compliance.html#core-policies">Acceptable Use Policy</a>.</li>
+          <li>You are logged in with <strong>your own admin account</strong>, not a shared or root account.</li>
+          <li>You know the username, which follows the naming convention: <strong>first initial + surname</strong>, in lowercase (e.g. Juan Dela Cruz → <code>jdelacruz</code>).</li>
+        </ul>
+
+        <div class="callout danger">
+          <p class="callout-title">Danger</p>
+          <p>Never add a user to an administrator group (<code>sudo</code>, <code>Domain Admins</code>) under this SOP. Administrator access needs separate written approval from the IT Manager.</p>
+        </div>
+
+        <h2 id="procedure">5. Procedure</h2>
+        <p>Choose the platform. The tabs remember your choice, and the verification section below switches with them.</p>
+
+        <div class="tabs" data-group="os">
+          <div class="tab-panel" data-label="Linux (Ubuntu)">
+            <ol class="steps">
+              <li><strong>Connect to the server with your personal admin account.</strong>
+<pre><code class="language-bash">ssh your-admin-user@srv-01.corp.example.com</code></pre>
+              </li>
+              <li><strong>Check that the username is not already taken.</strong>
+<pre><code class="language-bash">id jdelacruz</code></pre>
+                Expected output: <code>id: 'jdelacruz': no such user</code>
+              </li>
+              <li><strong>Create the account with a home directory and the Bash shell.</strong>
+<pre><code class="language-bash">sudo useradd -m -s /bin/bash -c "Juan Dela Cruz" jdelacruz</code></pre>
+              </li>
+              <li><strong>Set a temporary password and force a change at first login.</strong>
+<pre><code class="language-bash">sudo passwd jdelacruz      # enter a temporary password (12+ characters)
+sudo chage -d 0 jdelacruz  # user must change it at first login</code></pre>
+              </li>
+              <li><strong>Add the user to the groups approved in the ticket.</strong>
+<pre><code class="language-bash">sudo usermod -aG developers jdelacruz</code></pre>
+                <div class="callout warning">
+                  <p class="callout-title">Warning</p>
+                  <p>Always use <code>-aG</code> (append). Using <code>-G</code> alone <strong>removes</strong> the user from every group not listed.</p>
+                </div>
+              </li>
+            </ol>
+          </div>
+          <div class="tab-panel" data-label="Windows (Active Directory)">
+            <ol class="steps">
+              <li><strong>Open PowerShell with your admin account on a management workstation and load the AD module.</strong>
+<pre><code class="language-powershell">Import-Module ActiveDirectory</code></pre>
+              </li>
+              <li><strong>Check that the username is not already taken.</strong>
+<pre><code class="language-powershell">Get-ADUser -Filter "SamAccountName -eq 'jdelacruz'"</code></pre>
+                Expected: no output.
+              </li>
+              <li><strong>Create the account in the Staff organizational unit.</strong>
+<pre><code class="language-powershell">New-ADUser -Name "Juan Dela Cruz" -GivenName "Juan" -Surname "Dela Cruz" `
+  -SamAccountName "jdelacruz" -UserPrincipalName "jdelacruz@corp.example.com" `
+  -Path "OU=Staff,DC=corp,DC=example,DC=com" `
+  -AccountPassword (Read-Host -AsSecureString "Temporary password") `
+  -ChangePasswordAtLogon $true -Enabled $true</code></pre>
+              </li>
+              <li><strong>Add the user to the groups approved in the ticket.</strong>
+<pre><code class="language-powershell">Add-ADGroupMember -Identity "Developers" -Members "jdelacruz"</code></pre>
+              </li>
+            </ol>
+          </div>
+        </div>
+
+        <h3 id="handover">Hand over the account (both platforms)</h3>
+        <ol class="steps">
+          <li><strong>Give the temporary password through a separate channel.</strong>Tell the user in person, or have the service desk send it by SMS.</li>
+          <li><strong>Help the user enrol in MFA at first login.</strong>Required by POL-SEC-002 for email and VPN.</li>
+          <li><strong>Record the work in the ticket.</strong>Note the username, groups added, date and your name, then close the ticket.</li>
+        </ol>
+        <div class="callout warning">
+          <p class="callout-title">Warning</p>
+          <p>Never send the username and temporary password together in the same email or chat message.</p>
+        </div>
+
+        <h2 id="verification">6. Verification</h2>
+        <div class="tabs" data-group="os">
+          <div class="tab-panel" data-label="Linux (Ubuntu)">
+<pre><code class="language-bash">id jdelacruz
+sudo chage -l jdelacruz | head -n 1</code></pre>
+            <p>Expected output (the IDs may differ):</p>
+<pre><code class="language-text">uid=1005(jdelacruz) gid=1005(jdelacruz) groups=1005(jdelacruz),1002(developers)
+Last password change                                    : password must be changed</code></pre>
+          </div>
+          <div class="tab-panel" data-label="Windows (Active Directory)">
+<pre><code class="language-powershell">Get-ADUser jdelacruz -Properties MemberOf, PasswordLastSet |
+  Select-Object Name, Enabled, PasswordLastSet, MemberOf</code></pre>
+            <p>Expected: <code>Enabled</code> is <code>True</code>, <code>PasswordLastSet</code> is empty (the password must be changed at logon), and <code>MemberOf</code> lists only the approved groups.</p>
+          </div>
+        </div>
+
+        <div class="checklist" data-checklist="sop-acc-001">
+          <div class="checklist-head"><strong>Completion checklist</strong></div>
+          <ul>
+            <li><label><input type="checkbox"><span>Access request ticket is approved</span></label></li>
+            <li><label><input type="checkbox"><span>Username follows the naming convention and was not already in use</span></label></li>
+            <li><label><input type="checkbox"><span>Account created; password change forced at first login</span></label></li>
+            <li><label><input type="checkbox"><span>Only the approved groups were added (no admin groups)</span></label></li>
+            <li><label><input type="checkbox"><span>Temporary password given through a separate channel</span></label></li>
+            <li><label><input type="checkbox"><span>Ticket updated with details and closed</span></label></li>
+          </ul>
+        </div>
+
+        <h2 id="troubleshooting">7. Troubleshooting</h2>
+        <table>
+          <thead>
+            <tr><th>Problem</th><th>Likely cause</th><th>Solution</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>useradd: user 'jdelacruz' already exists</code></td><td>The username is taken, possibly by a former employee.</td><td>Use the next variation (e.g. <code>jdelacruz2</code>). Never reuse a former employee's account.</td></tr>
+            <tr><td><code>usermod: group 'developers' does not exist</code></td><td>Typo, or the group has not been created.</td><td>List groups with <code>getent group</code> and confirm the name in the ticket.</td></tr>
+            <tr><td>“The password does not meet the length, complexity, or history requirement”</td><td>The temporary password breaks the domain password policy.</td><td>Use a temporary password of 12 or more characters.</td></tr>
+            <tr><td>“Access is denied” in PowerShell</td><td>PowerShell is not running under your admin account.</td><td>Start PowerShell with <em>Run as different user</em> and use your admin account.</td></tr>
+            <tr><td>User cannot log in over SSH</td><td>The user's group is not allowed in the SSH configuration.</td><td>Check <code>AllowGroups</code> in <code>/etc/ssh/sshd_config</code>; ask for approval before changing it.</td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="rollback">8. Rollback</h2>
+        <p>If an account was created by mistake, <strong>disable it, don't delete it</strong>. That keeps an audit trail. Then follow the deprovisioning SOP (SOP-ACC-002).</p>
+        <div class="tabs" data-group="os">
+          <div class="tab-panel" data-label="Linux (Ubuntu)">
+<pre><code class="language-bash">sudo usermod --lock --expiredate 1 jdelacruz   # lock the password and expire the account</code></pre>
+          </div>
+          <div class="tab-panel" data-label="Windows (Active Directory)">
+<pre><code class="language-powershell">Disable-ADAccount -Identity jdelacruz</code></pre>
+          </div>
+        </div>
+
+        <h2 id="related">9. Related documents</h2>
+        <ul>
+          <li>POL-SEC-002 Password &amp; Authentication Policy (<a href="../it-policies-compliance.html#policy-example">excerpt</a>)</li>
+          <li>POL-SEC-003 Access Control Policy (<a href="../it-policies-compliance.html#core-policies">summary</a>)</li>
+          <li>SOP-ACC-002 Account Deprovisioning</li>
+          <li>SOP-ACC-004 Administrator and Service Accounts</li>
+          <li><a href="../glossary.html">Glossary</a></li>
+        </ul>
+
+        <h2 id="revision-history">10. Revision history</h2>
+        <table>
+          <thead>
+            <tr><th>Version</th><th>Date</th><th>Author</th><th>Change</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>0.1</td><td>2025-08-04</td><td>System Administrator</td><td>Initial draft (Linux only)</td></tr>
+            <tr><td>1.0</td><td>2025-09-01</td><td>System Administrator</td><td>Approved by IT Manager</td></tr>
+            <tr><td>1.1</td><td>2026-02-16</td><td>System Administrator</td><td>Added Windows Active Directory steps</td></tr>
+            <tr><td>1.2</td><td>2026-09-01</td><td>Senior System Administrator</td><td>Added rule to deliver temporary passwords through a separate channel; added MFA enrolment step</td></tr>
+          </tbody>
+        </table>
+
+      </article>
+    </main>
+    <aside class="toc" id="toc" aria-label="On this page"></aside>
+  </div>
+  <script src="../../assets/js/search-index.js"></script>
+  <script src="../../assets/js/site.js"></script>
+</body>
+</html>
