@@ -966,6 +966,7 @@ details.md pre { margin: 10px 0 0; padding: 16px; overflow-x: auto; border-radiu
       rows.innerHTML = recordRows();
       renderStoreMode();
       const ex = $('[data-action="export-all"]'); if (ex) ex.disabled = !store.records.length;
+      const rs = $('[data-action="reset-all"]'); if (rs) rs.disabled = !(store.records.length || draft);
     }
     else if (state.view === 'record' || state.view === 'scenarios') render();
   }
@@ -1014,7 +1015,8 @@ details.md pre { margin: 10px 0 0; padding: 16px; overflow-x: auto; border-radiu
     const heading = draft.mode === 'edit' ? 'Editing ' + draft.editingId : sc ? sc.title : 'New ' + tpl.label;
     const idInfo = draft.mode === 'edit' ? 'Record ID <b>' + esc(draft.editingId) + '</b>' : 'Record ID <b>' + esc(nextId(tpl.prefix)) + '</b> · assigned on save';
     const right = state.review ? reviewHTML() : formHTML();
-    return '<div class="practice-head"><div><p class="eyebrow">' + esc(tpl.label) + (sc ? ' · Scenario' : '') + '</p><h1>' + esc(heading) + '</h1></div><span class="spacer"></span><span class="id-preview">' + idInfo + '</span></div>' +
+    return '<div class="practice-head"><div><p class="eyebrow">' + esc(tpl.label) + (sc ? ' · Scenario' : '') + '</p><h1>' + esc(heading) + '</h1></div><span class="spacer"></span><span class="id-preview">' + idInfo + '</span>' +
+      '<button type="button" class="btn btn-sm" data-action="restart">' + (draft.mode === 'edit' ? 'Undo changes' : 'Start over') + '</button></div>' +
       '<div class="workbench' + (sc ? '' : ' single') + '">' + (sc ? '<aside class="feed-pane pane" id="feed-pane" aria-label="Scenario">' + feedHTML(sc) + '</aside>' : '') +
       '<section class="stack" id="form-pane">' + right + '</section></div>';
   }
@@ -1215,7 +1217,10 @@ details.md pre { margin: 10px 0 0; padding: 16px; overflow-x: auto; border-radiu
     const statuses = FIELDS.status.options.map((o) => '<option' + (state.filters.status === o ? ' selected' : '') + '>' + esc(o) + '</option>').join('');
     const blanks = Object.keys(TEMPLATES).map((k) => '<button class="btn btn-sm" data-action="blank" data-template="' + k + '">' + esc(TEMPLATES[k].label) + '</button>').join('');
     return '<div class="page-head"><div><p class="eyebrow">Records</p><h1>Documentation log</h1><p class="lead">Every record you save, newest first. Open one to read it, edit it (each edit is kept in its revision history), or export it.</p></div><span class="spacer"></span>' +
-      '<button class="btn" data-action="export-all"' + (store.records.length ? '' : ' disabled') + '>Download all (JSON)</button></div>' +
+      '<button class="btn" data-action="export-all"' + (store.records.length ? '' : ' disabled') + '>Download all (JSON)</button>' +
+      '<button class="btn btn-ghost" data-action="reset-all"' + (store.records.length || draft ? '' : ' disabled') + '>Reset all</button></div>' +
+      (state.confirmReset ? '<div class="banner" role="alert" style="margin:0 0 22px"><p>Delete ' + [store.records.length ? (store.records.length === 1 ? '1 record' : 'all ' + store.records.length + ' records') : '', draft ? 'your unsaved draft' : ''].filter(Boolean).join(' and ') + ' from this ' + (store.mode === 'cloud' ? 'account' : 'browser') + '? This can’t be undone.' + (store.records.length ? ' Download them first if you want a copy.' : '') + '</p>' +
+        '<div class="btn-row"><button class="btn btn-danger btn-sm" data-action="confirm-reset">Delete everything</button><button class="btn btn-sm" data-action="cancel-reset">Cancel</button></div></div>' : '') +
       '<div class="toolbar"><input type="search" id="rec-q" placeholder="Search by ID, title, person, system…" value="' + esc(state.filters.q) + '" aria-label="Search records">' +
       '<select id="rec-type" aria-label="Filter by type"><option value="">All types</option>' + types + '</select>' +
       '<select id="rec-status" aria-label="Filter by status"><option value="">All statuses</option>' + statuses + '</select>' +
@@ -1308,6 +1313,17 @@ details.md pre { margin: 10px 0 0; padding: 16px; overflow-x: auto; border-radiu
     toast('Downloaded ' + filename);
   }
 
+  // First click arms the button; a second click within 4 seconds confirms.
+  function arm(btn, text) {
+    btn.dataset.armed = '1';
+    btn.dataset.label = btn.innerHTML;
+    btn.textContent = text;
+    btn.classList.add('btn-danger');
+    setTimeout(() => {
+      if (btn.isConnected && btn.dataset.armed) { delete btn.dataset.armed; btn.innerHTML = btn.dataset.label; btn.classList.remove('btn-danger'); }
+    }, 4000);
+  }
+
   function startDraft(opts) {
     draft = newDraft(opts);
     persistDraft();
@@ -1371,6 +1387,7 @@ details.md pre { margin: 10px 0 0; padding: 16px; overflow-x: auto; border-radiu
   function route() {
     const h = decodeURIComponent(location.hash.replace(/^#/, ''));
     state.confirmDelete = false;
+    state.confirmReset = false;
     if (h === 'records') state.view = 'records';
     else if (h === 'guide') state.view = 'guide';
     else if (h === 'practice' && draft) state.view = 'practice';
@@ -1444,11 +1461,38 @@ details.md pre { margin: 10px 0 0; padding: 16px; overflow-x: auto; border-radiu
         toast(editing ? 'Edit cancelled' : 'Draft discarded');
         go(editing ? 'record-' + editing : 'scenarios');
       } else {
-        btn.dataset.armed = '1';
-        btn.textContent = draft.mode === 'edit' ? 'Click again to cancel' : 'Click again to discard';
-        btn.classList.add('btn-danger');
-        setTimeout(() => { if (btn.isConnected) { delete btn.dataset.armed; btn.textContent = draft && draft.mode === 'edit' ? 'Cancel edit' : 'Discard'; btn.classList.remove('btn-danger'); } }, 4000);
+        arm(btn, draft.mode === 'edit' ? 'Click again to cancel' : 'Click again to discard');
       }
+    } else if (act === 'restart') {
+      if (!btn.dataset.armed) { arm(btn, draft.mode === 'edit' ? 'Click again to undo' : 'Click again to start over'); return; }
+      if (draft.mode === 'edit') {
+        const rec = store.records.find((r) => r.id === draft.editingId);
+        if (rec) { draft.fields = clone(rec.fields || {}); draft.timeline = clone(rec.timeline && rec.timeline.length ? rec.timeline : [{ t: '', a: '' }]); draft.changeNote = ''; }
+      } else {
+        const author = draft.author;
+        draft = newDraft({ mode: draft.mode, scenarioId: draft.scenarioId, template: draft.template });
+        draft.author = author;
+      }
+      state.review = null; state.showExample = false;
+      persistDraft();
+      render();
+      window.scrollTo(0, 0);
+      toast(draft.mode === 'edit' ? 'Changes undone' : 'Started over');
+    } else if (act === 'reset-all') { state.confirmReset = true; render(); }
+    else if (act === 'cancel-reset') { state.confirmReset = false; render(); }
+    else if (act === 'confirm-reset') {
+      btn.disabled = true;
+      try {
+        const ids = store.records.map((r) => r.id);
+        for (const id of ids) await store.remove(id);
+        clearDraft();
+        LS.del(KEY_AUTHOR);
+        state.confirmReset = false;
+        state.filters = { q: '', type: '', status: '' };
+        changed();
+        render();
+        toast('Everything was reset');
+      } catch (err) { btn.disabled = false; toast('Could not delete every record. Try again.'); }
     } else if (act === 'edit') {
       const rec = store.records.find((r) => r.id === state.recordId);
       if (!rec) return;
