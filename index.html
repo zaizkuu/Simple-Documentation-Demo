@@ -40,13 +40,14 @@
   --r-lg: 24px;
   --r: 14px;
   --qr-bg: #ffffff;
+  --scrim: rgba(28, 36, 48, .38);
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #262b33; --surface: #262b33; --ink: #dfe5ee; --muted: #9ba7b8; --line: rgba(0, 0, 0, .38); --hover: rgba(255, 255, 255, .035);
     --hi: rgba(255, 255, 255, .06); --lo: rgba(0, 0, 0, .55);
     --accent: #63d6ba; --accent-fill: #5cc9ae; --accent-ink: #0d221c; --stamp: #f2b45c; --stamp-soft: rgba(242, 180, 92, .14);
-    --ok: #74d69e; --warn: #f1b552; --bad: #ff8c80;
+    --ok: #74d69e; --warn: #f1b552; --bad: #ff8c80; --scrim: rgba(0, 0, 0, .6);
     color-scheme: dark;
   }
 }
@@ -54,7 +55,7 @@
   --bg: #262b33; --surface: #262b33; --ink: #dfe5ee; --muted: #9ba7b8; --line: rgba(0, 0, 0, .38); --hover: rgba(255, 255, 255, .035);
   --hi: rgba(255, 255, 255, .06); --lo: rgba(0, 0, 0, .55);
   --accent: #63d6ba; --accent-fill: #5cc9ae; --accent-ink: #0d221c; --stamp: #f2b45c; --stamp-soft: rgba(242, 180, 92, .14);
-  --ok: #74d69e; --warn: #f1b552; --bad: #ff8c80;
+  --ok: #74d69e; --warn: #f1b552; --bad: #ff8c80; --scrim: rgba(0, 0, 0, .6);
   color-scheme: dark;
 }
 
@@ -146,7 +147,7 @@ main.wrap { padding-block: 18px 80px; }
 .section-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin: 40px 0 20px; }
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 26px; }
 .card { display: flex; flex-direction: column; gap: 12px; padding: 22px; border-radius: var(--r-lg); box-shadow: var(--raise); transition: box-shadow .2s, transform .2s; }
-.card:hover { transform: translateY(-2px); box-shadow: 12px 12px 24px var(--lo), -12px -12px 24px var(--hi); }
+@media (hover: hover) { .card:hover { transform: translateY(-2px); box-shadow: 12px 12px 24px var(--lo), -12px -12px 24px var(--hi); } }
 .card-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13px; }
 .card h3 { font-size: 1.15rem; font-weight: 800; }
 .card p { color: var(--muted); font-size: 14.5px; }
@@ -327,6 +328,16 @@ details.md pre { margin: 10px 0 0; padding: 16px; overflow-x: auto; border-radiu
 .toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); z-index: 40; max-width: min(560px, calc(100vw - 32px)); transform: translate(-50%, 16px); opacity: 0; pointer-events: none; padding: 13px 20px; border-radius: 16px; background: var(--bg); color: var(--ink); font-size: 14px; font-weight: 600; box-shadow: var(--raise); transition: opacity .18s, transform .18s; }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 
+/* Confirmation dialog: fixed over the page so it is always on screen, even on a phone */
+.dialog-backdrop { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 16px max(16px, env(safe-area-inset-right, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); background: var(--scrim); }
+.dialog { width: min(480px, 100%); padding: 24px; border-radius: var(--r-lg); background: var(--bg); box-shadow: var(--raise); }
+.dialog p { color: var(--muted); margin: 10px 0 22px; }
+@media (max-width: 620px) {
+  .dialog-backdrop { place-items: end center; }
+  .dialog .btn-row { flex-direction: column; }
+  .dialog .btn { width: 100%; min-height: 46px; }
+}
+
 /* Class review */
 .share { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 26px; align-items: center; margin-bottom: 26px; }
 .qr { width: 196px; height: 196px; padding: 14px; border-radius: 20px; background: var(--qr-bg); box-shadow: var(--raise); display: grid; place-items: center; }
@@ -369,6 +380,7 @@ details.md pre { margin: 10px 0 0; padding: 16px; overflow-x: auto; border-radiu
 </header>
 <main class="wrap" id="app" tabindex="-1"></main>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="dialog-backdrop" id="dialog" hidden></div>
 
 <script>
 (function () {
@@ -1240,6 +1252,15 @@ details.md pre { margin: 10px 0 0; padding: 16px; overflow-x: auto; border-radiu
   }
   function clearDraft() { clearTimeout(draftTimer); draft = null; LS.del(KEY_DRAFT); }
 
+  // A draft with nothing typed into it can be replaced without asking.
+  const draftHasWork = (d) => !!d && (d.mode === 'edit' ||
+    Object.keys(d.fields || {}).some((k) => String(d.fields[k] || '').trim()) ||
+    (d.timeline || []).some((e) => String(e.a || '').trim()));
+  function draftLabel(d) {
+    const sc = d.scenarioId ? scenarioById(d.scenarioId) : null;
+    return d.mode === 'edit' ? 'your edit of ' + d.editingId : sc ? 'the scenario “' + sc.title + '”' : 'a blank ' + TEMPLATES[d.template].label;
+  }
+
   function newDraft(opts) {
     const today = ymd(new Date());
     const sc = opts.scenarioId ? scenarioById(opts.scenarioId) : null;
@@ -1382,15 +1403,7 @@ details.md pre { margin: 10px 0 0; padding: 16px; overflow-x: auto; border-radiu
   }
 
   function scenariosView() {
-    const sc = draft && draft.scenarioId ? scenarioById(draft.scenarioId) : null;
-    const draftName = draft ? (draft.mode === 'edit' ? 'your edit of ' + draft.editingId : sc ? 'the scenario “' + sc.title + '”' : 'a blank ' + TEMPLATES[draft.template].label) : '';
-    let banner = '';
-    if (draft && state.pendingStart) {
-      banner = '<div class="banner" role="alert"><p>Starting a new record will discard your unsaved work on ' + esc(draftName) + '.</p>' +
-        '<div class="btn-row"><button class="btn btn-primary btn-sm" data-action="confirm-start">Discard and start</button><button class="btn btn-sm" data-action="resume">Keep working on it</button><button class="btn btn-ghost btn-sm" data-action="cancel-start">Cancel</button></div></div>';
-    } else if (draft) {
-      banner = '<div class="banner"><p>You have unsaved documentation for ' + esc(draftName) + '.</p><div class="btn-row"><button class="btn btn-primary btn-sm" data-action="resume">Resume</button></div></div>';
-    }
+    const banner = draft ? '<div class="banner"><p>You have unsaved documentation for ' + esc(draftLabel(draft)) + '.</p><div class="btn-row"><button class="btn btn-primary btn-sm" data-action="resume">Resume</button></div></div>' : '';
     const cards = PRACTICE.map(cardHTML).join('');
     const blanks = Object.keys(TEMPLATES).map((k) => '<button class="btn btn-sm" data-action="blank" data-template="' + k + '">' + esc(TEMPLATES[k].label) + '</button>').join('');
     return '<section class="intro"><div><p class="eyebrow">Documentation practice for system administrators</p><h1>Read the situation. Write it down properly.</h1>' +
@@ -1932,6 +1945,36 @@ details.md pre { margin: 10px 0 0; padding: 16px; overflow-x: auto; border-radiu
     }, 4000);
   }
 
+  // Same scenario: reopen it. Empty draft: replace it. Unsaved work: ask first, in a dialog.
+  function requestStart(opts) {
+    const same = draft && draft.mode !== 'edit' && (opts.scenarioId ? draft.scenarioId === opts.scenarioId : !draft.scenarioId && draft.template === opts.template);
+    if (same) { go('practice'); return; }
+    if (draftHasWork(draft)) { showStartDialog(opts); return; }
+    clearDraft();
+    startDraft(opts);
+  }
+
+  const dialog = $('#dialog');
+  function showStartDialog(opts) {
+    state.pendingStart = opts;
+    const target = opts.scenarioId ? '“' + scenarioById(opts.scenarioId).title + '”' : 'a blank ' + TEMPLATES[opts.template].label;
+    dialog.innerHTML = '<div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialog-title"><h2 id="dialog-title">Discard your unsaved work?</h2>' +
+      '<p>You have unsaved work on ' + esc(draftLabel(draft)) + '. Starting ' + esc(target) + ' will discard it.</p>' +
+      '<div class="btn-row"><button class="btn btn-primary" data-dialog="confirm">Discard and start</button><button class="btn" data-dialog="resume">Keep working on it</button><button class="btn btn-ghost" data-dialog="cancel">Cancel</button></div></div>';
+    dialog.hidden = false;
+    $('[data-dialog="resume"]', dialog).focus();
+  }
+  function hideDialog() { dialog.hidden = true; dialog.innerHTML = ''; state.pendingStart = null; }
+  dialog.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-dialog]');
+    if (!b) { if (e.target === dialog) hideDialog(); return; }
+    const opts = state.pendingStart;
+    hideDialog();
+    if (b.dataset.dialog === 'confirm' && opts) { clearDraft(); startDraft(opts); }
+    else if (b.dataset.dialog === 'resume') go('practice');
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !dialog.hidden) hideDialog(); });
+
   function startDraft(opts) {
     draft = newDraft(opts);
     persistDraft();
@@ -2026,6 +2069,7 @@ details.md pre { margin: 10px 0 0; padding: 16px; overflow-x: auto; border-radiu
 
   function route() {
     const h = decodeURIComponent(location.hash.replace(/^#/, ''));
+    let ask = null;
     state.confirmDelete = false;
     state.confirmReset = false;
     state.cls.confirmClear = false; state.cls.confirmDel = false;
@@ -2039,17 +2083,19 @@ details.md pre { margin: 10px 0 0; padding: 16px; overflow-x: auto; border-radiu
       const keep = draft && draft.mode !== 'edit' && CLASS_SET.some((x) => x.id === draft.scenarioId) ? draft.scenarioId : null;
       const id = h === 'start-random' ? (keep || CLASS_SET[Math.floor(Math.random() * CLASS_SET.length)].id) : h.slice(6);
       if (draft && draft.scenarioId === id && draft.mode !== 'edit') state.view = 'practice';
-      else if (draft) { state.pendingStart = { mode: 'scenario', scenarioId: id }; state.view = 'scenarios'; }
-      else { draft = newDraft({ mode: 'scenario', scenarioId: id }); persistDraft(); state.view = 'practice'; }
-      history.replaceState(null, '', state.view === 'practice' ? '#practice' : '#scenarios');
+      else if (draftHasWork(draft)) { ask = { mode: 'scenario', scenarioId: id }; state.view = CLASS_SET.some((x) => x.id === id) ? 'class' : 'scenarios'; }
+      else { clearDraft(); draft = newDraft({ mode: 'scenario', scenarioId: id }); persistDraft(); state.view = 'practice'; }
+      history.replaceState(null, '', '#' + state.view);
     }
     else if (h === 'practice' && draft) state.view = 'practice';
     else if (h.indexOf('record-') === 0) { state.view = 'record'; state.recordId = h.slice(7); }
     else state.view = 'scenarios';
     if (state.view !== 'practice') { state.review = null; state.showExample = false; }
     if (state.view !== 'review') state.cls.openId = null;
+    if (!dialog.hidden) hideDialog();
     render();
     window.scrollTo(0, 0);
+    if (ask) showStartDialog(ask);
   }
 
   app.addEventListener('click', async (e) => {
@@ -2064,11 +2110,8 @@ details.md pre { margin: 10px 0 0; padding: 16px; overflow-x: auto; border-radiu
 
     if (act === 'start' || act === 'blank') {
       const opts = act === 'start' ? { mode: 'scenario', scenarioId: btn.dataset.id } : { mode: 'blank', template: btn.dataset.template };
-      if (draft) { state.pendingStart = opts; if (state.view !== 'scenarios') go('scenarios'); else render(); window.scrollTo(0, 0); return; }
-      startDraft(opts);
-    } else if (act === 'confirm-start') { const opts = state.pendingStart; clearDraft(); startDraft(opts); }
-    else if (act === 'cancel-start') { state.pendingStart = null; render(); }
-    else if (act === 'resume') { state.pendingStart = null; go('practice'); }
+      requestStart(opts);
+    } else if (act === 'resume') { go('practice'); }
     else if (act === 'reveal' || act === 'reveal-all') {
       draft.revealed = act === 'reveal' ? Math.min(sc.events.length, draft.revealed + 1) : sc.events.length;
       persistDraft();
@@ -2208,7 +2251,9 @@ details.md pre { margin: 10px 0 0; padding: 16px; overflow-x: auto; border-radiu
     } else if (act === 'edit') {
       const rec = store.records.find((r) => r.id === state.recordId);
       if (!rec) return;
-      if (draft) { toast('Finish or discard your unsaved draft first.'); state.pendingStart = null; go('scenarios'); return; }
+      if (draft && draft.mode === 'edit' && draft.editingId === rec.id) { go('practice'); return; }
+      if (draftHasWork(draft)) { toast('Finish or discard your unsaved draft first.'); go('scenarios'); return; }
+      clearDraft();
       const rsc = scenarioById(rec.scenarioId);
       draft = {
         mode: 'edit', editingId: rec.id, template: rec.template, scenarioId: rec.scenarioId || null, scenarioDate: rec.scenarioDate || null,
